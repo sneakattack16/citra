@@ -53,6 +53,7 @@ enum class Class : ClassType {
     Service_FS,                 ///< The FS (Filesystem) service implementation
     Service_ERR,                ///< The ERR (Error) port implementation
     Service_APT,                ///< The APT (Applets) service
+    Service_BOSS,               //// The BOSS (SpotPass) service
     Service_GSP,                ///< The GSP (GPU control) service
     Service_AC,                 ///< The AC (WiFi status) service
     Service_AM,                 ///< The AM (Application manager) service
@@ -61,6 +62,7 @@ enum class Class : ClassType {
     Service_NDM,                ///< The NDM (Network daemon manager) service
     Service_NIM,                ///< The NIM (Network interface manager) service
     Service_NWM,                ///< The NWM (Network wlan manager) service
+    Service_MIC,                ///< The MIC service
     Service_CAM,                ///< The CAM (Camera) service
     Service_CECD,               ///< The CECD (StreetPass) service
     Service_CFG,                ///< The CFG (Configuration) service
@@ -78,8 +80,9 @@ enum class Class : ClassType {
     Render,                     ///< Emulator video output and hardware acceleration
     Render_Software,            ///< Software renderer backend
     Render_OpenGL,              ///< OpenGL backend
-    Audio,                      ///< Emulator audio output
+    Audio,                      ///< Audio emulation
     Audio_DSP,                  ///< The HLE implementation of the DSP
+    Audio_Sink,                 ///< Emulator audio output backend
     Loader,                     ///< ROM loader
 
     Count ///< Total number of logging classes
@@ -104,12 +107,16 @@ void LogMessage(Class log_class, Level log_level,
 
 #ifdef _DEBUG
 #define LOG_TRACE(   log_class, ...) LOG_GENERIC(::Log::Class::log_class, ::Log::Level::Trace,    __VA_ARGS__)
-#else
-#define LOG_TRACE(   log_class, ...) (void(0))
-#endif
-
 #define LOG_DEBUG(   log_class, ...) LOG_GENERIC(::Log::Class::log_class, ::Log::Level::Debug,    __VA_ARGS__)
 #define LOG_INFO(    log_class, ...) LOG_GENERIC(::Log::Class::log_class, ::Log::Level::Info,     __VA_ARGS__)
 #define LOG_WARNING( log_class, ...) LOG_GENERIC(::Log::Class::log_class, ::Log::Level::Warning,  __VA_ARGS__)
 #define LOG_ERROR(   log_class, ...) LOG_GENERIC(::Log::Class::log_class, ::Log::Level::Error,    __VA_ARGS__)
 #define LOG_CRITICAL(log_class, ...) LOG_GENERIC(::Log::Class::log_class, ::Log::Level::Critical, __VA_ARGS__)
+#else
+#define LOG_TRACE(   log_class, ...) (void(0))
+#define LOG_DEBUG(   log_class, ...) LOG_GENERIC(::Log::Class::log_class, ::Log::Level::Debug,    __VA_ARGS__)
+#define LOG_INFO(    log_class, ...) LOG_GENERIC(::Log::Class::log_class, ::Log::Level::Info,     __VA_ARGS__)
+#define LOG_WARNING( log_class, ...) LOG_GENERIC(::Log::Class::log_class, ::Log::Level::Warning,  __VA_ARGS__)
+#define LOG_ERROR(   log_class, ...) LOG_GENERIC(::Log::Class::log_class, ::Log::Level::Error,    __VA_ARGS__)
+#define LOG_CRITICAL(log_class, ...) LOG_GENERIC(::Log::Class::log_class, ::Log::Level::Critical, __VA_ARGS__)
+#endif

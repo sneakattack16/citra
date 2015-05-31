@@ -24,6 +24,8 @@ GraphicsDebugger g_debugger;
 // Beginning address of HW regs
 const static u32 REGS_BEGIN = 0x1EB00000;
 
+static bool gpu_right_acquired = false;
+static bool gpu_first_initialized = true;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Namespace GSP_GPU
 
@@ -293,8 +295,20 @@ static void FlushDataCache(Service::Interface* self) {
 
     cmd_buff[1] = RESULT_SUCCESS.raw; // No error
 
-    LOG_DEBUG(Service_GSP, "(STUBBED) called address=0x%08X, size=0x%08X, process=0x%08X",
+    LOG_TRACE(Service_GSP, "(STUBBED) called address=0x%08X, size=0x%08X, process=0x%08X",
               address, size, process);
+}
+
+static void StoreDataCache(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+    u32 address = cmd_buff[1];
+    u32 size = cmd_buff[2];
+    u32 process = cmd_buff[4];
+
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+
+    LOG_TRACE(Service_GSP, "(STUBBED) called address=0x%08X, size=0x%08X, process=0x%08X",
+        address, size, process);
 }
 
 /**
@@ -339,8 +353,13 @@ static void RegisterInterruptRelayQueue(Service::Interface* self) {
     Handle shmem_handle = Kernel::g_handle_table.Create(g_shared_memory).MoveFrom();
 
     // This specific code is required for a successful initialization, rather than 0
-    cmd_buff[1] = ResultCode((ErrorDescription)519, ErrorModule::GX,
-                             ErrorSummary::Success, ErrorLevel::Success).raw;
+    if (gpu_first_initialized == true) {
+        cmd_buff[1] = ResultCode((ErrorDescription)519, ErrorModule::GX,
+            ErrorSummary::Success, ErrorLevel::Success).raw;
+        gpu_first_initialized = false;
+    } else {
+        cmd_buff[1] = RESULT_SUCCESS.raw;
+    }
     cmd_buff[2] = g_thread_id++; // Thread ID
     cmd_buff[4] = shmem_handle; // GSP shared memory
 
@@ -370,12 +389,7 @@ static void UnregisterInterruptRelayQueue(Service::Interface* self) {
  * @todo This probably does not belong in the GSP module, instead move to video_core
  */
 void SignalInterrupt(InterruptId interrupt_id) {
-    if (nullptr == g_interrupt_event) {
-        LOG_WARNING(Service_GSP, "cannot synchronize until GSP event has been created!");
-        return;
-    }
-    if (nullptr == g_shared_memory) {
-        LOG_WARNING(Service_GSP, "cannot synchronize until GSP shared memory has been created!");
+    if(!gpu_right_acquired) {
         return;
     }
     for (int thread_id = 0; thread_id < 0x4; ++thread_id) {
@@ -624,6 +638,25 @@ static void ImportDisplayCaptureInfo(Service::Interface* self) {
     LOG_WARNING(Service_GSP, "called");
 }
 
+static void AcquireRight(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    gpu_right_acquired = true;
+
+    cmd_buff[1] = RESULT_SUCCESS.raw;
+
+    LOG_WARNING(Service_GSP, "called");
+}
+
+static void ReleaseRight(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    gpu_right_acquired = false;
+
+    cmd_buff[1] = RESULT_SUCCESS.raw;
+
+    LOG_WARNING(Service_GSP, "called");
+}
 
 const Interface::FunctionInfo FunctionTable[] = {
     {0x00010082, WriteHWRegs,                   "WriteHWRegs"},
@@ -647,8 +680,8 @@ const Interface::FunctionInfo FunctionTable[] = {
     {0x00130042, RegisterInterruptRelayQueue,   "RegisterInterruptRelayQueue"},
     {0x00140000, UnregisterInterruptRelayQueue, "UnregisterInterruptRelayQueue"},
     {0x00150002, nullptr,                       "TryAcquireRight"},
-    {0x00160042, nullptr,                       "AcquireRight"},
-    {0x00170000, nullptr,                       "ReleaseRight"},
+    {0x00160042, AcquireRight,                  "AcquireRight"},
+    {0x00170000, ReleaseRight,                  "ReleaseRight"},
     {0x00180000, ImportDisplayCaptureInfo,      "ImportDisplayCaptureInfo"},
     {0x00190000, nullptr,                       "SaveVramSysArea"},
     {0x001A0000, nullptr,                       "RestoreVramSysArea"},
@@ -656,7 +689,7 @@ const Interface::FunctionInfo FunctionTable[] = {
     {0x001C0040, nullptr,                       "SetLedForceOff"},
     {0x001D0040, nullptr,                       "SetTestCommand"},
     {0x001E0080, nullptr,                       "SetInternalPriorities"},
-    {0x001F0082, nullptr,                       "StoreDataCache"},
+    {0x001F0082, StoreDataCache,                "StoreDataCache"},
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -669,11 +702,15 @@ Interface::Interface() {
     g_shared_memory = nullptr;
 
     g_thread_id = 0;
+    gpu_first_initialized = true;
+    gpu_right_acquired = false;
 }
 
 Interface::~Interface() {
     g_interrupt_event = nullptr;
     g_shared_memory = nullptr;
+    gpu_first_initialized = true;
+    gpu_right_acquired = false;
 }
 
 } // namespace

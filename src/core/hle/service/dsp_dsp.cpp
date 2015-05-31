@@ -89,6 +89,14 @@ void SignalPipeInterrupt(DspPipe pipe) {
     interrupt_events.Signal(InterruptType::Pipe, pipe);
 }
 
+void ResetSemaphore() {
+    semaphore_event->Clear();
+}
+
+bool IsSemaphoreSignalled() {
+    return semaphore_event->signaled;
+}
+
 /**
  * DSP_DSP::ConvertProcessAddressFromDspDram service function
  *  Inputs:
@@ -290,6 +298,21 @@ static void WriteProcessPipe(Service::Interface* self) {
     std::vector<u8> message(size);
     for (size_t i = 0; i < size; i++) {
         message[i] = Memory::Read8(buffer + i);
+    }
+
+    switch (pipe) {
+    case DSP::HLE::DspPipe::Audio:
+        ASSERT(message.size() >= 4);
+        message[2] = 0;
+        message[3] = 0;
+        break;
+    case DSP::HLE::DspPipe::Binary:
+        ASSERT(message.size() >= 8);
+        message[4] = 1;
+        message[5] = 0;
+        message[6] = 0;
+        message[7] = 0;
+        break;
     }
 
     DSP::HLE::PipeWrite(pipe, message);

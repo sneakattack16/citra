@@ -30,6 +30,12 @@ struct Profile {
     u32 unknown;
 };
 
+struct Mii {
+    u8 unknown[96];
+};
+
+void GetMyProfile(Service::Interface* self);
+
 /**
  * FRD::GetMyPresence service function
  *  Inputs:
@@ -94,6 +100,21 @@ void GetMyFriendKey(Service::Interface* self);
  *      2 : UTF16 encoded name (max 11 symbols)
  */
 void GetMyScreenName(Service::Interface* self);
+
+void GetMyMii(Service::Interface* self);
+
+void UpdateGameModeDescription(Service::Interface* self);
+
+void AttachToEventNotification(Service::Interface* self);
+
+/**
+ * FRD::SetClientSdkVersion service function
+ *  Inputs:
+ *      1 : Version
+ *  Outputs:
+ *      1 : Result of function, 0 on success, otherwise error code
+ */
+void SetClientSdkVersion(Service::Interface* self);
 
 /// Initialize FRD service(s)
 void Init();

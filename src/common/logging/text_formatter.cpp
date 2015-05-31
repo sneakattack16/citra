@@ -87,7 +87,7 @@ void PrintColoredMessage(const Entry& entry) {
         UNREACHABLE();
     }
 
-    SetConsoleTextAttribute(console_handle, color);
+    SetConsoleTextAttribute(console_handle, color | BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
 #else
 #   define ESC "\x1b"
     const char* color = "";

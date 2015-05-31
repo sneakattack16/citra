@@ -43,7 +43,7 @@ namespace Pica {
 struct Regs {
 
     INSERT_PADDING_WORDS(0x10);
-
+    /*0x10*/
     u32 trigger_irq;
 
     INSERT_PADDING_WORDS(0x2f);
@@ -55,15 +55,15 @@ struct Regs {
         KeepCounterClockWise = 2,
         // TODO: What does the third value imply?
     };
-
+    /*0x40*/
     union {
         BitField<0, 2, CullMode> cull_mode;
     };
-
+    /*0x41*/
     BitField<0, 24, u32> viewport_size_x;
-
+    /*0x42*/
     INSERT_PADDING_WORDS(0x1);
-
+    /*0x43*/
     BitField<0, 24, u32> viewport_size_y;
 
     INSERT_PADDING_WORDS(0x9);
@@ -96,6 +96,7 @@ struct Regs {
             TEXCOORD0_V  = 13,
             TEXCOORD1_U  = 14,
             TEXCOORD1_V  = 15,
+
 
             // TODO: Not verified
             VIEW_X       = 18,
@@ -773,11 +774,21 @@ struct Regs {
                     BitField< 0, 16, u32> z;
                 };
 
-                INSERT_PADDING_WORDS(0x3);
+                union {
+                    BitField< 0, 16, u32> spot_x;
+                    BitField<16, 16, u32> spot_y;
+                };
+                union {
+                    BitField< 0, 16, u32> spot_z;
+                };
+
+                INSERT_PADDING_WORDS(0x1);
 
                 union {
                     BitField<0, 1, u32> directional;
                     BitField<1, 1, u32> two_sided_diffuse; // When disabled, clamp dot-product to 0
+                    BitField<2, 1, u32> geom_factor_0;
+                    BitField<3, 1, u32> geom_factor_1;
                 };
             };
 
@@ -1072,7 +1083,7 @@ struct Regs {
     // These registers are used to setup the default "fall-back" vertex shader attributes
     struct {
         // Index of the current default attribute
-        u32 index;
+        u32  index;
 
         // Writing to these registers sets the "current" default attribute.
         u32 set_value[3];
@@ -1235,7 +1246,7 @@ struct Regs {
     };
 
     ShaderConfig gs;
-    ShaderConfig vs;
+    ShaderConfig vs; // REG_0x2b0
 
     INSERT_PADDING_WORDS(0x20);
 
@@ -1267,10 +1278,6 @@ private:
     }
 };
 
-// TODO: MSVC does not support using offsetof() on non-static data members even though this
-//       is technically allowed since C++11. This macro should be enabled once MSVC adds
-//       support for that.
-#ifndef _MSC_VER
 #define ASSERT_REG_POSITION(field_name, position) static_assert(offsetof(Regs, field_name) == position * 4, "Field "#field_name" has invalid position")
 
 ASSERT_REG_POSITION(trigger_irq, 0x10);
@@ -1279,8 +1286,8 @@ ASSERT_REG_POSITION(viewport_size_x, 0x41);
 ASSERT_REG_POSITION(viewport_size_y, 0x43);
 ASSERT_REG_POSITION(viewport_depth_range, 0x4d);
 ASSERT_REG_POSITION(viewport_depth_far_plane, 0x4e);
-ASSERT_REG_POSITION(vs_output_attributes[0], 0x50);
-ASSERT_REG_POSITION(vs_output_attributes[1], 0x51);
+//ASSERT_REG_POSITION(vs_output_attributes[0], 0x50);
+//ASSERT_REG_POSITION(vs_output_attributes[1], 0x51);
 ASSERT_REG_POSITION(viewport_corner, 0x68);
 ASSERT_REG_POSITION(texture0_enable, 0x80);
 ASSERT_REG_POSITION(texture0, 0x81);
@@ -1316,9 +1323,8 @@ ASSERT_REG_POSITION(gs, 0x280);
 ASSERT_REG_POSITION(vs, 0x2b0);
 
 #undef ASSERT_REG_POSITION
-#endif // !defined(_MSC_VER)
 
-static_assert(sizeof(Regs::ShaderConfig) == 0x30 * sizeof(u32), "ShaderConfig structure has incorrect size");
+static_assert(sizeof(Regs::gs) == 0x30 * sizeof(u32), "ShaderConfig structure has incorrect size");
 
 // The total number of registers is chosen arbitrarily, but let's make sure it's not some odd value anyway.
 static_assert(sizeof(Regs) <= 0x300 * sizeof(u32), "Register set structure larger than it should be");

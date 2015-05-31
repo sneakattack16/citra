@@ -456,6 +456,8 @@ void Thread::SetPriority(s32 priority) {
         ready_queue.prepare(priority);
 
     nominal_priority = current_priority = priority;
+
+    HLE::Reschedule(__func__);
 }
 
 void Thread::BoostPriority(s32 priority) {
@@ -488,6 +490,8 @@ void Reschedule() {
     // Don't bother switching to the same thread
     if (next == cur)
         return;
+
+    //LOG_DEBUG(Kernel, "Change thread: %s", next->GetName().c_str());
 
     if (cur && next) {
         LOG_TRACE(Kernel, "context switch %u -> %u", cur->GetObjectId(), next->GetObjectId());
@@ -529,6 +533,10 @@ void ThreadingShutdown() {
     }
     thread_list.clear();
     ready_queue.clear();
+}
+
+const std::vector<SharedPtr<Thread>>& GetThreadList(){
+    return thread_list;
 }
 
 } // namespace
