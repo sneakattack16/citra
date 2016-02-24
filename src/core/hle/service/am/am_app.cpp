@@ -17,6 +17,7 @@ const Interface::FunctionInfo FunctionTable[] = {
     {0x10070102, nullptr, "ListDataTitleTicketInfos"},
     {0x100900C0, nullptr, "IsDataTitleInUse"},
     {0x100A0000, nullptr, "IsExternalTitleDatabaseInitialized"},
+    {0x100D0084, nullptr, "GetDemoDataTitleInfos"},
 };
 
 AM_APP_Interface::AM_APP_Interface() {
