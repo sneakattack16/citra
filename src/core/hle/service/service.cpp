@@ -5,6 +5,8 @@
 #include "common/logging/log.h"
 #include "common/string_util.h"
 
+#include "core/arm/arm_interface.h"
+
 #include "core/hle/service/service.h"
 #include "core/hle/service/ac_u.h"
 #include "core/hle/service/act_u.h"
@@ -62,6 +64,34 @@ static std::string MakeFunctionString(const char* name, const char* port_name, c
 ResultVal<bool> Interface::SyncRequest() {
     u32* cmd_buff = Kernel::GetCommandBuffer();
     auto itr = m_functions.find(cmd_buff[0]);
+    u32 lr = Core::g_app_core->GetReg(14);
+    u32 pc = Core::g_app_core->GetReg(15);
+    if (itr == m_functions.end() || itr->second.func == nullptr) {
+        std::string function_name = (itr == m_functions.end()) ? Common::StringFromFormat("0x%08X", cmd_buff[0]) : itr->second.name;
+        LOG_ERROR(Service, "lr/pc: 0x%08X/0x%08X, unknown / unimplemented %s", lr, pc, MakeFunctionString(function_name.c_str(), GetPortName().c_str(), cmd_buff).c_str());
+
+        // TODO(bunnei): Hack - ignore error
+        cmd_buff[1] = 0;
+        return MakeResult<bool>(false);
+    } else {
+
+        if(strcmp("TriggerCmdReqQueue", itr->second.name)) {
+            if(strcmp("FlushDataCache", itr->second.name)) {
+                if(strcmp("GetHeadphoneStatus", itr->second.name)) {
+                    LOG_TRACE(Service, "lr/pc: 0x%08X/0x%08X, %s", lr, pc, MakeFunctionString(itr->second.name, GetPortName().c_str(), cmd_buff).c_str());
+                }
+            }
+        }
+    }
+
+    itr->second.func(this);
+
+    return MakeResult<bool>(false); // TODO: Implement return from actual function
+}
+/*
+ResultVal<bool> Interface::SyncRequest() {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+    auto itr = m_functions.find(cmd_buff[0]);
 
     if (itr == m_functions.end() || itr->second.func == nullptr) {
         std::string function_name = (itr == m_functions.end()) ? Common::StringFromFormat("0x%08X", cmd_buff[0]) : itr->second.name;
@@ -78,6 +108,7 @@ ResultVal<bool> Interface::SyncRequest() {
 
     return MakeResult<bool>(false); // TODO: Implement return from actual function
 }
+*/
 
 void Interface::Register(const FunctionInfo* functions, size_t n) {
     m_functions.reserve(n);

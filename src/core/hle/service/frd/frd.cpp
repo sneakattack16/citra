@@ -2,6 +2,7 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include "common/string_util.h"
 #include "core/hle/service/service.h"
 #include "core/hle/service/frd/frd.h"
 #include "core/hle/service/frd/frd_a.h"
@@ -80,7 +81,9 @@ void GetMyScreenName(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
     cmd_buff[1] = 0; // No error
-    cmd_buff[2] = 'A';
+    //cmd_buff[2] = 'A';
+
+    Common::UTF8ToUTF16("Citra").copy((char16_t*)&cmd_buff[2], 20);
 
     LOG_TRACE(Service_FRD, "(STUBBED) called");
 }

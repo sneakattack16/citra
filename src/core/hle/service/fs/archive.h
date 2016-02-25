@@ -36,6 +36,7 @@ enum class ArchiveIdCode : u32 {
     SDMC                = 0x00000009,
     SDMCWriteOnly       = 0x0000000A,
     SaveDataCheck       = 0x2345678A,
+    DemoSave            = 0x567890B4,
 };
 
 /// Media types for the archives
