@@ -574,6 +574,27 @@ static void ImportDisplayCaptureInfo(Service::Interface* self) {
     LOG_WARNING(Service_GSP, "called");
 }
 
+/**
+ * GSP_GPU::SetAxiConfigQoSMode service function
+ *  Inputs:
+ *      1 : Mode, unused in emulator
+ *  Outputs:
+ *      1 : Result of function, 0 on success, otherwise error code
+ */
+static void SetAxiConfigQoSMode(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+    u32 mode = cmd_buff[1];
+
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+
+    LOG_DEBUG(Service_GSP, "(STUBBED) called mode=0x%08X", mode);
+}
+
+static void AcquireRight(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    cmd_buff[1] = 0;
+}
 
 const Interface::FunctionInfo FunctionTable[] = {
     {0x00010082, WriteHWRegs,                   "WriteHWRegs"},
@@ -591,13 +612,13 @@ const Interface::FunctionInfo FunctionTable[] = {
     {0x000D0140, nullptr,                       "SetDisplayTransfer"},
     {0x000E0180, nullptr,                       "SetTextureCopy"},
     {0x000F0200, nullptr,                       "SetMemoryFill"},
-    {0x00100040, nullptr,                       "SetAxiConfigQoSMode"},
+    {0x00100040, SetAxiConfigQoSMode,           "SetAxiConfigQoSMode"},
     {0x00110040, nullptr,                       "SetPerfLogMode"},
     {0x00120000, nullptr,                       "GetPerfLog"},
     {0x00130042, RegisterInterruptRelayQueue,   "RegisterInterruptRelayQueue"},
     {0x00140000, nullptr,                       "UnregisterInterruptRelayQueue"},
     {0x00150002, nullptr,                       "TryAcquireRight"},
-    {0x00160042, nullptr,                       "AcquireRight"},
+    {0x00160042, AcquireRight,                  "AcquireRight"},
     {0x00170000, nullptr,                       "ReleaseRight"},
     {0x00180000, ImportDisplayCaptureInfo,      "ImportDisplayCaptureInfo"},
     {0x00190000, nullptr,                       "SaveVramSysArea"},
