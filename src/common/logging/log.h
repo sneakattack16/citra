@@ -65,6 +65,7 @@ enum class Class : ClassType {
     Service_HID,                ///< The HID (Human interface device) service
     Service_SOC,                ///< The SOC (Socket) service
     Service_FRD,                ///< The Friends service
+    Service_IR,
     Service_Y2R,                ///< The Y2R (YUV to RGB conversion) service
     HW,                         ///< Low-level hardware emulation
     HW_Memory,                  ///< Memory-map and address translation

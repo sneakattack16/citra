@@ -50,6 +50,7 @@ namespace Log {
         SUB(Service, HID) \
         SUB(Service, SOC) \
         SUB(Service, FRD) \
+        SUB(Service, IR)  \
         SUB(Service, Y2R) \
         CLS(HW) \
         SUB(HW, Memory) \

@@ -43,7 +43,7 @@ static void ConvertProcessAddressFromDspDram(Service::Interface* self) {
     cmd_buff[1] = 0; // No error
     cmd_buff[2] = (addr << 1) + (Memory::DSP_RAM_VADDR + 0x40000);
 
-    LOG_WARNING(Service_DSP, "(STUBBED) called with address 0x%08X", addr);
+    LOG_INFO(Service_DSP, "(STUBBED) called with address 0x%08X", addr);
 }
 
 /**
@@ -223,7 +223,10 @@ static void ReadPipeIfPossible(Service::Interface* self) {
             Memory::Write16(addr + offset, canned_read_pipe[read_pipe_count]);
             read_pipe_count++;
         } else {
-            LOG_ERROR(Service_DSP, "canned read pipe log exceeded!");
+            //LOG_ERROR(Service_DSP, "canned read pipe log exceeded!");
+            cmd_buff[1] = 0x00000000; // No error
+            cmd_buff[2] = size;
+            return;
             break;
         }
     }
