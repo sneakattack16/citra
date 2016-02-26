@@ -255,6 +255,7 @@ static void ReadPipeIfPossible(Service::Interface* self) {
 
     Memory::WriteBlock(addr, response.data(), response.size());
 
+
     cmd_buff[1] = 0; // No error
     cmd_buff[2] = (u32)response.size();
 
