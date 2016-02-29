@@ -4,8 +4,15 @@
 
 #pragma once
 
+#include "core/hle/service/service.h"
+
 namespace Service {
 namespace CECD {
+
+void GetCecInfoEventHandle(Service::Interface* self);
+void OpenAndReadFile(Service::Interface* self);
+void SetData(Service::Interface* self);
+
 
 /// Initialize CECD service(s)
 void Init();
