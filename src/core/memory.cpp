@@ -10,10 +10,13 @@
 #include "common/logging/log.h"
 #include "common/swap.h"
 
+#include "core/core.h"
+#include "core/arm/arm_interface.h"
 #include "core/hle/kernel/process.h"
 #include "core/memory.h"
 #include "core/memory_setup.h"
 #include "core/mmio.h"
+
 
 namespace Memory {
 
@@ -63,6 +66,8 @@ struct PageTable {
 static PageTable main_page_table;
 /// Currently active page table
 static PageTable* current_page_table = &main_page_table;
+/// bounds of code
+static u32 start_code, size_code;
 
 static void MapPages(u32 base, u32 size, u8* memory, PageType type) {
     LOG_DEBUG(HW_Memory, "Mapping %p onto %08X-%08X", memory, base * PAGE_SIZE, (base + size) * PAGE_SIZE);
@@ -178,8 +183,8 @@ u8* GetPointer(const VAddr vaddr) {
     if (page_pointer) {
         return page_pointer + (vaddr & PAGE_MASK);
     }
-
-    LOG_ERROR(HW_Memory, "unknown GetPointer @ 0x%08x", vaddr);
+    u32 pc = Core::g_app_core->GetPC();
+    LOG_ERROR(HW_Memory, "PC=0x%08x, unknown GetPointer @ 0x%08x", pc, vaddr);
     return nullptr;
 }
 
@@ -301,6 +306,15 @@ VAddr PhysicalToVirtualAddress(const PAddr addr) {
     LOG_ERROR(HW_Memory, "Unknown physical address @ 0x%08X", addr);
     // To help with debugging, set bit on address so that it's obviously invalid.
     return addr | 0x80000000;
+}
+
+
+void SetCodeSize(u32 start, u32 size) {
+    start_code = start;
+    size_code = start + size;
+}
+bool IsCodeAddress(u32 offset) {
+    return (offset >= start_code) && (offset < size_code);
 }
 
 } // namespace
