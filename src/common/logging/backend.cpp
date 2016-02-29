@@ -45,6 +45,7 @@ namespace Log {
         SUB(Service, NIM) \
         SUB(Service, NWM) \
         SUB(Service, CAM) \
+        SUB(Service, CECD) \
         SUB(Service, CFG) \
         SUB(Service, DSP) \
         SUB(Service, HID) \
@@ -106,7 +107,9 @@ Entry CreateEntry(Class log_class, Level log_level,
     entry.log_class = log_class;
     entry.log_level = log_level;
 
-    snprintf(formatting_buffer.data(), formatting_buffer.size(), "%s:%s:%u", filename, function, line_nr);
+    // we don't need filename
+    snprintf(formatting_buffer.data(), formatting_buffer.size(), "%s:%u", function, line_nr);
+    //snprintf(formatting_buffer.data(), formatting_buffer.size(), "%s:%s:%u", filename, function, line_nr);
     entry.location = std::string(formatting_buffer.data());
 
     vsnprintf(formatting_buffer.data(), formatting_buffer.size(), format, args);
