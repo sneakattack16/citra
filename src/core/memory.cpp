@@ -135,11 +135,11 @@ T Read(const VAddr vaddr) {
         std::memcpy(&value, &page_pointer[vaddr & PAGE_MASK], sizeof(T));
         return value;
     }
-
+    u32 pc = Core::g_app_core->GetPC();
     PageType type = current_page_table->attributes[vaddr >> PAGE_BITS];
     switch (type) {
     case PageType::Unmapped:
-        LOG_ERROR(HW_Memory, "unmapped Read%lu @ 0x%08X", sizeof(T) * 8, vaddr);
+        LOG_ERROR(HW_Memory, "PC=0x%08x, unmapped Read%lu @ 0x%08X", pc, sizeof(T) * 8, vaddr);
         return 0;
     case PageType::Memory:
         ASSERT_MSG(false, "Mapped memory page without a pointer @ %08X", vaddr);
@@ -284,8 +284,12 @@ PAddr VirtualToPhysicalAddress(const VAddr addr) {
     } else if (addr >= NEW_LINEAR_HEAP_VADDR && addr < NEW_LINEAR_HEAP_VADDR_END) {
         return addr - NEW_LINEAR_HEAP_VADDR + FCRAM_PADDR;
     }
-
-    LOG_ERROR(HW_Memory, "Unknown virtual address @ 0x%08X", addr);
+    // Heap address one to one
+    if (addr >= HEAP_VADDR && addr < HEAP_VADDR_END) {
+        return addr;
+    }
+    u32 pc = Core::g_app_core->GetPC();
+    LOG_ERROR(HW_Memory, "PC=0x%08x, Unknown virtual address @ 0x%08X", pc, addr);
     // To help with debugging, set bit on address so that it's obviously invalid.
     return addr | 0x80000000;
 }
