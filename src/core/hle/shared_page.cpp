@@ -15,7 +15,8 @@ SharedPageDef shared_page;
 void Init() {
     std::memset(&shared_page, 0, sizeof(shared_page));
 
-    shared_page.running_hw = 0x1; // product
+    shared_page.running_hw   = 0x1; // product
+    shared_page.unknown_flag = 0x1; // "Anpanman to Touch de Waku Waku Training" waits "1"
 }
 
 } // namespace

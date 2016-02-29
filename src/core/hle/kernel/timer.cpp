@@ -85,7 +85,7 @@ static void TimerCallback(u64 timer_handle, int cycles_late) {
     timer->signaled = true;
 
     // Resume all waiting threads
-    timer->WakeupAllWaitingThreads();
+    //timer->WakeupAllWaitingThreads();
 
     if (timer->interval_delay != 0) {
         // Reschedule the timer with the interval delay

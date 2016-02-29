@@ -9,6 +9,8 @@
 #include "common/common_types.h"
 #include "common/symbols.h"
 
+#include <core/hle/kernel/thread.h>
+
 #include "core/core.h"
 #include "core/memory.h"
 #include "core/arm/arm_interface.h"
@@ -34,13 +36,15 @@ void CallstackWidget::OnDebugModeEntered()
 
     Clear();
 
+    if (Kernel::GetCurrentThread() == nullptr)
+        return;
     int counter = 0;
     for (u32 addr = 0x10000000; addr >= sp; addr -= 4)
     {
         const u32 ret_addr = Memory::Read32(addr);
-        const u32 call_addr = ret_addr - 4; //get call address???
+        const u32 call_addr = ret_addr - 4; //TODO: check if ARM mode
 
-        if (Memory::GetPointer(call_addr) == nullptr)
+        if (!Memory::IsCodeAddress(call_addr) || (Memory::GetPointer(call_addr) == nullptr))
             break;
 
         /* TODO (mattvail) clean me, move to debugger interface */

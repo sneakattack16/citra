@@ -270,6 +270,8 @@ ResultStatus AppLoader_NCCH::Load() {
         return ResultStatus::ErrorEncrypted;
     }
 
+    Memory::SetCodeSize(entry_point, code_size);
+
     // Read ExeFS...
 
     exefs_offset = ncch_header.exefs_offset * kBlockSize;
