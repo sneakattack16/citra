@@ -65,7 +65,7 @@ ResultVal<bool> Interface::SyncRequest() {
     u32* cmd_buff = Kernel::GetCommandBuffer();
     auto itr = m_functions.find(cmd_buff[0]);
     u32 lr = Core::g_app_core->GetReg(14);
-    u32 pc = Core::g_app_core->GetReg(15);
+    u32 pc = Core::g_app_core->GetPC();
     if (itr == m_functions.end() || itr->second.func == nullptr) {
         std::string function_name = (itr == m_functions.end()) ? Common::StringFromFormat("0x%08X", cmd_buff[0]) : itr->second.name;
         LOG_ERROR(Service, "lr/pc: 0x%08X/0x%08X, unknown / unimplemented %s", lr, pc, MakeFunctionString(function_name.c_str(), GetPortName().c_str(), cmd_buff).c_str());

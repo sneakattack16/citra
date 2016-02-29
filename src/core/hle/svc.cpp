@@ -402,7 +402,9 @@ static ResultCode ArbitrateAddress(Handle handle, u32 address, u32 type, u32 val
 }
 
 static void Break(u8 break_reason) {
-    LOG_CRITICAL(Debug_Emulated, "Emulated program broke execution!");
+    u32 lr = Core::g_app_core->GetReg(14);
+    u32 pc = Core::g_app_core->GetPC();
+    LOG_CRITICAL(Debug_Emulated, "lr/pc: 0x%08X/0x%08X, Emulated program broke execution!", lr, pc);
     std::string reason_str;
     switch (break_reason) {
     case 0: reason_str = "PANIC"; break;
@@ -678,25 +680,26 @@ static ResultCode DuplicateHandle(Handle* out, Handle handle) {
 /// Signals an event
 static ResultCode SignalEvent(Handle handle) {
     using Kernel::Event;
-    LOG_TRACE(Kernel_SVC, "called event=0x%08X", handle);
 
     SharedPtr<Event> evt = Kernel::g_handle_table.Get<Kernel::Event>(handle);
     if (evt == nullptr)
         return ERR_INVALID_HANDLE;
 
-    evt->Signal();
+    LOG_TRACE(Kernel_SVC, "called event=0x%08X, name=%s", handle, evt->name.c_str());
 
+    evt->Signal();
     return RESULT_SUCCESS;
 }
 
 /// Clears an event
 static ResultCode ClearEvent(Handle handle) {
     using Kernel::Event;
-    LOG_TRACE(Kernel_SVC, "called event=0x%08X", handle);
 
     SharedPtr<Event> evt = Kernel::g_handle_table.Get<Kernel::Event>(handle);
     if (evt == nullptr)
         return ERR_INVALID_HANDLE;
+
+    LOG_TRACE(Kernel_SVC, "called event=0x%08X, name=%s", handle, evt->name.c_str());
 
     evt->Clear();
     return RESULT_SUCCESS;
@@ -739,6 +742,9 @@ static ResultCode SetTimer(Handle handle, s64 initial, s64 interval) {
         return ERR_INVALID_HANDLE;
 
     timer->Set(initial, interval);
+    if ((initial == 0) && (interval == 0)) {
+        timer->signaled = true;
+    }
 
     return RESULT_SUCCESS;
 }

@@ -148,4 +148,7 @@ VAddr PhysicalToVirtualAddress(PAddr addr);
  */
 u8* GetPhysicalPointer(PAddr address);
 
+void SetCodeSize(u32 start, u32 size);
+bool IsCodeAddress(u32 offset);
+
 }
