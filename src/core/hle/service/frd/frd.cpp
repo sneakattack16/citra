@@ -29,7 +29,7 @@ void GetFriendKeyList(Service::Interface* self) {
     u32 unknown   = cmd_buff[1];
     u32 frd_count = cmd_buff[2];
     u32 buf_addr  = cmd_buff[65];
-    FriendKey* frd_key_list = (FriendKey*)Memory::GetPointer(buf_addr);
+    FriendKey* frd_key_list = reinterpret_cast<FriendKey*>(Memory::GetPointer(buf_addr));
     memset(frd_key_list, 0, frd_count * sizeof(FriendKey));
 
     cmd_buff[1] = RESULT_SUCCESS.raw; // No error
@@ -71,7 +71,7 @@ void GetMyScreenName(Service::Interface* self) {
 
     cmd_buff[1] = 0; // No error
     // TODO: (mailwl) get the name from config
-    Common::UTF8ToUTF16("Citra").copy((char16_t*)&cmd_buff[2], 20);
+    Common::UTF8ToUTF16("Citra").copy(reinterpret_cast<char16_t*>(&cmd_buff[2]), 20);
     LOG_WARNING(Service_FRD, "(STUBBED) called");
 }
 

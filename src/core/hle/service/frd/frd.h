@@ -4,9 +4,12 @@
 
 #pragma once
 
-#include "core/hle/service/service.h"
+#include "common/common_types.h"
 
 namespace Service {
+
+class Interface;
+
 namespace FRD {
 
 struct FriendKey {
