@@ -100,6 +100,23 @@ static void SetOutputFormat(Service::Interface* self) {
     cmd_buff[1] = RESULT_SUCCESS.raw;
 }
 
+/**
+  * Y2R_U::GetOutputFormat service function
+  */
+static void GetOutputFormat(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+    LOG_DEBUG(Service_Y2R, "Get output_format=%hhu", conversion.output_format);
+    cmd_buff[1] = RESULT_SUCCESS.raw;
+    cmd_buff[2] = static_cast<u32>(conversion.output_format);
+}
+
+static void GetInputFormat(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+    LOG_DEBUG(Service_Y2R, "Get input_format=%hhu", conversion.input_format);
+    cmd_buff[1] = RESULT_SUCCESS.raw;
+    cmd_buff[2] = static_cast<u32>(conversion.input_format);
+}
+
 static void SetRotation(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
@@ -375,9 +392,9 @@ static void DriverFinalize(Service::Interface* self) {
 
 const Interface::FunctionInfo FunctionTable[] = {
     {0x00010040, SetInputFormat,          "SetInputFormat"},
-    {0x00020000, nullptr,                 "GetInputFormat"},
+    {0x00020000, GetInputFormat,          "GetInputFormat"},
     {0x00030040, SetOutputFormat,         "SetOutputFormat"},
-    {0x00040000, nullptr,                 "GetOutputFormat"},
+    {0x00040000, GetOutputFormat,         "GetOutputFormat"},
     {0x00050040, SetRotation,             "SetRotation"},
     {0x00060000, nullptr,                 "GetRotation"},
     {0x00070040, SetBlockAlignment,       "SetBlockAlignment"},
