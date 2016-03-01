@@ -21,7 +21,7 @@ static const Interface::FunctionInfo FunctionTable[] = {
     {0x000A00C4, nullptr,                   "ReadData"},
     {0x000B0040, nullptr,                   "Start"},
     {0x000C0040, nullptr,                   "Stop"},
-    {0x000D0082, nullptr,                   "GetCecInfoBuffer"},
+    {0x000D0082, GetCecInfoBuffer,          "GetCecInfoBuffer"},
     {0x000E0000, nullptr,                   "GetCecdState"},
     {0x000F0000, GetCecInfoEventHandle,     "GetCecInfoEventHandle"},
     {0x00100000, nullptr,                   "GetChangeStateEventHandle"},

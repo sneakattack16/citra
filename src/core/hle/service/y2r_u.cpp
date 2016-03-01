@@ -373,11 +373,23 @@ static void DriverFinalize(Service::Interface* self) {
     LOG_DEBUG(Service_Y2R, "called");
 }
 
+/**
+* Y2R_U::GetOutputFormat service function
+*/
+static void GetOutputFormat(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    LOG_DEBUG(Service_Y2R, "Get output_format=%hhu", conversion.output_format);
+
+    cmd_buff[1] = RESULT_SUCCESS.raw;
+    cmd_buff[2] = static_cast<u32>(conversion.output_format);
+}
+
 const Interface::FunctionInfo FunctionTable[] = {
     {0x00010040, SetInputFormat,          "SetInputFormat"},
     {0x00020000, nullptr,                 "GetInputFormat"},
     {0x00030040, SetOutputFormat,         "SetOutputFormat"},
-    {0x00040000, nullptr,                 "GetOutputFormat"},
+    {0x00040000, GetOutputFormat,         "GetOutputFormat"},
     {0x00050040, SetRotation,             "SetRotation"},
     {0x00060000, nullptr,                 "GetRotation"},
     {0x00070040, SetBlockAlignment,       "SetBlockAlignment"},
