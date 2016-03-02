@@ -778,6 +778,32 @@ static void GetFormatInfo(Service::Interface* self) {
     cmd_buff[5] = format_info->duplicate_data;
 }
 
+static void ControlArchive(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    //u32 unk1 = cmd_buff[1]; // a3
+    //u32 unk2  = cmd_buff[2]; // a4
+    //u32 unk3  = cmd_buff[3]; // a5
+    //u32 size1  = cmd_buff[4]; // size_t a7
+    u32 size2 = cmd_buff[5]; // size_t a9
+                             //u32 ssize1  = cmd_buff[6]; // 16 * a7 | 0xA
+                             //u32 buf1  = cmd_buff[7]; // const void* a6
+                             //u32 ssize2  = cmd_buff[8]; // 16 * a9 | 0xC
+    u32 buf2 = cmd_buff[9]; // void* a8
+    if (size2 == 1) {
+        Memory::Write8(buf2, 1);
+        // TODO: commit savedata
+    }
+    else {
+        memset(Memory::GetPointer(buf2), 0, size2);
+        // TODO: set timestamp
+    }
+
+    LOG_INFO(Service_FS, "called");
+
+    cmd_buff[1] = RESULT_SUCCESS.raw;
+}
+
 const Interface::FunctionInfo FunctionTable[] = {
     {0x000100C6, nullptr,                  "Dummy1"},
     {0x040100C4, nullptr,                  "Control"},
@@ -793,7 +819,7 @@ const Interface::FunctionInfo FunctionTable[] = {
     {0x080A0244, RenameDirectory,          "RenameDirectory"},
     {0x080B0102, OpenDirectory,            "OpenDirectory"},
     {0x080C00C2, OpenArchive,              "OpenArchive"},
-    {0x080D0144, nullptr,                  "ControlArchive"},
+    {0x080D0144, ControlArchive,           "ControlArchive"},
     {0x080E0080, CloseArchive,             "CloseArchive"},
     {0x080F0180, FormatThisUserSaveData,   "FormatThisUserSaveData"},
     {0x08100200, nullptr,                  "CreateSystemSaveData"},
