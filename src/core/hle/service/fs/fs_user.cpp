@@ -391,6 +391,59 @@ static void OpenArchive(Service::Interface* self) {
 }
 
 /**
+ * FS_User::ControlArchive service function
+ *  Inputs:
+ *      1-2 : Archive Handle
+ *      3 : Action
+ *      4 : Input Size
+ *      5 : Output Size
+ *      6 : (inputSize << 4) | 0xA
+ *      7 : Input Buffer
+ *      8 : (outputSize << 4) | 0xC
+ *      9 : Output Buffer
+ *  Outputs:
+ *      1 : Result of function, 0 on success, otherwise error code
+*/
+static void ControlArchive(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    ArchiveHandle archive_handle = MakeArchiveHandle(cmd_buff[1], cmd_buff[2]);
+    u32 action         = cmd_buff[3];
+    u32 input_size     = cmd_buff[4];
+    u32 output_size    = cmd_buff[5];
+    u32 input_buff     = cmd_buff[7];
+    u32 output_buff    = cmd_buff[9];
+
+    cmd_buff[1] = RESULT_SUCCESS.raw;
+
+    switch (action)
+    {
+    case 0: // Commit save data changes. Input: none, Output: none
+        LOG_WARNING(Service_FS, "input: %u", Memory::Read8(input_buff));
+        Memory::Write8(output_buff, 1);
+        break;
+    case 1: { // Retrieve a file's last-modified timestamp. Input: utf16 path, Output: u64 Timestamp
+        const std::string filename = Common::UTF16ToUTF8(std::u16string(reinterpret_cast<char16_t*>
+                                                        (Memory::GetPointer(input_buff), input_size)));
+        LOG_WARNING(Service_FS, "filename: %s", filename.c_str());
+        if (FileUtil::Exists(filename)) {
+            u64 timestamp = FileUtil::GetTimeStamp(filename);
+            memcpy(Memory::GetPointer(output_buff), &timestamp, output_size);
+        } else
+        {
+            cmd_buff[1] = -1;
+        }
+        break;
+    }
+    case 30877:
+    default:
+        UNIMPLEMENTED();
+    }
+    LOG_WARNING(Service_FS, "called");
+
+}
+
+/**
  * FS_User::CloseArchive service function
  *  Inputs:
  *      0 : 0x080E0080
@@ -722,7 +775,7 @@ const Interface::FunctionInfo FunctionTable[] = {
     {0x080A0244, RenameDirectory,          "RenameDirectory"},
     {0x080B0102, OpenDirectory,            "OpenDirectory"},
     {0x080C00C2, OpenArchive,              "OpenArchive"},
-    {0x080D0144, nullptr,                  "ControlArchive"},
+    {0x080D0144, ControlArchive,           "ControlArchive"},
     {0x080E0080, CloseArchive,             "CloseArchive"},
     {0x080F0180, FormatThisUserSaveData,   "FormatThisUserSaveData"},
     {0x08100200, nullptr,                  "CreateSystemSaveData"},
