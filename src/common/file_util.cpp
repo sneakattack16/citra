@@ -404,6 +404,21 @@ u64 GetSize(FILE *f)
     return size;
 }
 
+u64 GetTimeStamp(const std::string &filename){
+    struct stat64 buf;
+#ifdef _WIN32
+    if (_tstat64(Common::UTF8ToTStr(filename).c_str(), &buf) == 0)
+#else
+    if (stat64(filename.c_str(), &buf) == 0)
+#endif
+    {
+        LOG_TRACE(Common_Filesystem, "%s: %lld",
+            filename.c_str(), (long long)buf.st_mtime);
+        return buf.st_mtime;
+    }
+    return 0ull;
+}
+
 // creates an empty file filename, returns true on success
 bool CreateEmptyFile(const std::string &filename)
 {
