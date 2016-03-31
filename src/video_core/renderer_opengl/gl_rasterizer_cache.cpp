@@ -159,7 +159,7 @@ bool RasterizerCacheOpenGL::BlitTextures(GLuint src_tex, GLuint dst_tex, CachedS
     return true;
 }
 
-bool RasterizerCacheOpenGL::TryBlitSurfaces(CachedSurface* src_surface, CachedSurface* dst_surface, const MathUtil::Rectangle<int>& src_rect, const MathUtil::Rectangle<int>& dst_rect) {
+bool RasterizerCacheOpenGL::TryBlitSurfaces(CachedSurface* src_surface, const MathUtil::Rectangle<int>& src_rect, CachedSurface* dst_surface, const MathUtil::Rectangle<int>& dst_rect) {
     using SurfaceType = CachedSurface::SurfaceType;
 
     if (!CachedSurface::CheckFormatsBlittable(src_surface->pixel_format, dst_surface->pixel_format)) {
@@ -256,13 +256,13 @@ CachedSurface* RasterizerCacheOpenGL::GetSurface(const CachedSurface& params, bo
         return best_exact_surface;
     }
 
-    MICROPROFILE_SCOPE(OpenGL_SurfaceUpload);
-
     // No matching surfaces found, so create a new one
     u8* texture_src_data = Memory::GetPhysicalPointer(params.addr);
     if (texture_src_data == nullptr) {
         return nullptr;
     }
+
+    MICROPROFILE_SCOPE(OpenGL_SurfaceUpload);
 
     std::shared_ptr<CachedSurface> new_surface = std::make_shared<CachedSurface>();
 
@@ -286,7 +286,7 @@ CachedSurface* RasterizerCacheOpenGL::GetSurface(const CachedSurface& params, bo
     } else {
         // TODO: Consider attempting subrect match in existing surfaces and direct blit here instead of memory upload below if that's a common scenario in some game
 
-        Memory::FlushRegion(params.addr, params_size, false);
+        Memory::RasterizerFlushRegion(params.addr, params_size);
 
         // Load data from memory to the new surface
         OpenGLState cur_state = OpenGLState::GetCurState();
@@ -382,7 +382,7 @@ CachedSurface* RasterizerCacheOpenGL::GetSurface(const CachedSurface& params, bo
         cur_state.Apply();
     }
 
-    Memory::MarkRegionCached(new_surface->addr, new_surface->size, true);
+    Memory::RasterizerMarkRegionCached(new_surface->addr, new_surface->size, 1);
     surface_cache.add(std::make_pair(boost::icl::interval<PAddr>::right_open(new_surface->addr, new_surface->addr + new_surface->size), std::set<std::shared_ptr<CachedSurface>>({ new_surface })));
     return new_surface.get();
 }
@@ -392,7 +392,8 @@ CachedSurface* RasterizerCacheOpenGL::GetSurfaceRect(const CachedSurface& params
         return nullptr;
     }
 
-    u32 params_size = params.width * params.height * CachedSurface::GetFormatBpp(params.pixel_format) / 8;
+    u32 total_pixels = params.width * params.height;
+    u32 params_size = total_pixels * CachedSurface::GetFormatBpp(params.pixel_format) / 8;
 
     // Attempt to find encompassing surfaces
     CachedSurface* best_subrect_surface = nullptr;
@@ -468,7 +469,7 @@ CachedSurface* RasterizerCacheOpenGL::GetTextureSurface(const Pica::Regs::FullTe
     return GetSurface(params, true, false, true);
 }
 
-std::tuple<CachedSurface*, CachedSurface*> RasterizerCacheOpenGL::GetFramebufferSurfaces(const Pica::Regs::FramebufferConfig& config, MathUtil::Rectangle<int>& rect) {
+std::tuple<CachedSurface*, CachedSurface*, MathUtil::Rectangle<int>> RasterizerCacheOpenGL::GetFramebufferSurfaces(const Pica::Regs::FramebufferConfig& config) {
     const auto& regs = Pica::g_state.regs;
 
     // Make sur that framebuffers don't overlap if both color and depth are being used
@@ -518,9 +519,10 @@ std::tuple<CachedSurface*, CachedSurface*> RasterizerCacheOpenGL::GetFramebuffer
         depth_surface = nullptr;
     }
 
+    MathUtil::Rectangle<int> rect;
+
     if (color_surface != nullptr && depth_surface != nullptr && (depth_rect.left != color_rect.left || depth_rect.top != color_rect.top)) {
         // Can't specify separate color and depth viewport offsets in OpenGL, so re-zero both if they don't match
-        // TODO: Should be tested with more cases if possible
         if (color_rect.left != 0 || color_rect.top != 0) {
             color_surface = GetSurface(color_params, true, true, true);
         }
@@ -538,7 +540,14 @@ std::tuple<CachedSurface*, CachedSurface*> RasterizerCacheOpenGL::GetFramebuffer
         rect = MathUtil::Rectangle<int>(0, 0, 0, 0);
     }
 
-    return std::make_tuple(color_surface, depth_surface);
+    // Due to rendering to tiled surfaces and the vertical flip that occurs on flush of a tiled surface,
+    // the origin of the surface is shifted via surface height minus framebuffer height so that the tops
+    // align causing the commit to flip the framebuffer in the surface into the proper memory location
+    u32 vertical_origin_offset = (color_surface->height - regs.framebuffer.GetHeight());
+    rect.top += vertical_origin_offset;
+    rect.bottom += vertical_origin_offset;
+
+    return std::make_tuple(color_surface, depth_surface, rect);
 }
 
 CachedSurface* RasterizerCacheOpenGL::TryGetFillSurface(const GPU::Regs::MemoryFillConfig& config) {
@@ -677,7 +686,7 @@ void RasterizerCacheOpenGL::FlushRegion(PAddr addr, u32 size, const CachedSurfac
     for (auto surface : touching_surfaces) {
         FlushSurface(surface.get());
         if (invalidate) {
-            Memory::MarkRegionCached(surface->addr, surface->size, false);
+            Memory::RasterizerMarkRegionCached(surface->addr, surface->size, -1);
             surface_cache.subtract(std::make_pair(boost::icl::interval<PAddr>::right_open(surface->addr, surface->addr + surface->size), std::set<std::shared_ptr<CachedSurface>>({ surface })));
         }
     }
