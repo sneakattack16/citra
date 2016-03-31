@@ -351,17 +351,48 @@ void Thread::ResumeFromWait() {
  * Prints the thread queue for debugging purposes
  */
 static void DebugThreadQueue() {
+    static bool out = true;
+    if (!out)
+        return;
     Thread* thread = GetCurrentThread();
     if (!thread) {
-        LOG_DEBUG(Kernel, "Current: NO CURRENT THREAD");
-    } else {
-        LOG_DEBUG(Kernel, "0x%02X %u (current)", thread->current_priority, GetCurrentThread()->GetObjectId());
+        LOG_DEBUG(Kernel, "------------------------ Current: NO CURRENT THREAD");
+    }
+    else {
+        LOG_DEBUG(Kernel, "------------------------ %d %u (current)", thread->current_priority, GetCurrentThread()->GetObjectId());
     }
 
     for (auto& t : thread_list) {
+        if (t->status == THREADSTATUS_DEAD)
+            continue;
         s32 priority = ready_queue.contains(t.get());
         if (priority != -1) {
-            LOG_DEBUG(Kernel, "0x%02X %u", priority, t->GetObjectId());
+            LOG_DEBUG(Kernel, "Priority: %d, id: %u, name: %s", priority, t->GetObjectId(), t->name.c_str());
+        }
+        else {
+            std::string waiting;
+            u32 wait_addr = t->wait_address;
+            s32 val = 0;
+            if (wait_addr) {
+                val = Memory::Read32(wait_addr);
+            }
+            for (auto& wo : t->wait_objects) {
+                char buf[100];
+                sprintf(buf, "0x%X: %s, ", wo->GetObjectId(), wo->GetName().c_str());
+                waiting += buf;
+            }
+            if (waiting.size() == 0) {
+                switch (t->status) {
+                case     THREADSTATUS_RUNNING:       waiting = "Running"; break;
+                case     THREADSTATUS_READY:         waiting = "Ready to run"; break;
+                case     THREADSTATUS_WAIT_ARB:      waiting = "Waiting on an arb"; break;
+                case     THREADSTATUS_WAIT_SLEEP:    waiting = "Waiting SleepThread SVC"; break;
+                case     THREADSTATUS_WAIT_SYNCH:    waiting = "Waiting WaitSynchronization SVC"; break;
+                case     THREADSTATUS_DORMANT:       waiting = "Created but not yet made ready"; break;
+                case     THREADSTATUS_DEAD:          waiting = "Run to completion, or forcefully terminated"; break;
+                }
+            }
+            LOG_DEBUG(Kernel, "id: %u, name: %s, wa: 0x%08X, status: %s, val = %d", t->GetObjectId(), t->name.c_str(), wait_addr, waiting.c_str(), val);
         }
     }
 }
@@ -489,6 +520,8 @@ void Reschedule() {
     if (next == cur)
         return;
 
+    DebugThreadQueue();
+    /*
     if (cur && next) {
         LOG_TRACE(Kernel, "context switch %u -> %u", cur->GetObjectId(), next->GetObjectId());
     } else if (cur) {
@@ -496,7 +529,7 @@ void Reschedule() {
     } else if (next) {
         LOG_TRACE(Kernel, "context switch idle -> %u", next->GetObjectId());
     }
-
+    */
     SwitchContext(next);
 }
 

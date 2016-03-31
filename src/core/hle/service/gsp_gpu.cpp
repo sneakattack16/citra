@@ -26,6 +26,7 @@ GraphicsDebugger g_debugger;
 // Beginning address of HW regs
 const static u32 REGS_BEGIN = 0x1EB00000;
 
+static bool right_acquared = false;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Namespace GSP_GPU
 
@@ -285,6 +286,18 @@ static void FlushDataCache(Service::Interface* self) {
               address, size, process);
 }
 
+
+static void StoreDataCache(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+    u32 address = cmd_buff[1];
+    u32 size = cmd_buff[2];
+    u32 process = cmd_buff[4];
+
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+
+    LOG_DEBUG(Service_GSP, "(STUBBED) called address=0x%08X, size=0x%08X, process=0x%08X",
+        address, size, process);
+}
 /**
  * GSP_GPU::SetAxiConfigQoSMode service function
  *  Inputs:
@@ -332,6 +345,8 @@ static void RegisterInterruptRelayQueue(Service::Interface* self) {
     cmd_buff[2] = g_thread_id++; // Thread ID
     cmd_buff[4] = shmem_handle; // GSP shared memory
 
+    LOG_WARNING(Service_GSP, "called");
+
     g_interrupt_event->Signal(); // TODO(bunnei): Is this correct?
 }
 
@@ -358,6 +373,11 @@ static void UnregisterInterruptRelayQueue(Service::Interface* self) {
  * @todo This probably does not belong in the GSP module, instead move to video_core
  */
 void SignalInterrupt(InterruptId interrupt_id) {
+    if (!right_acquared) {
+        //LOG_WARNING(Service_GSP, "right not acquared!");
+        return;
+    }
+
     if (nullptr == g_interrupt_event) {
         LOG_WARNING(Service_GSP, "cannot synchronize until GSP event has been created!");
         return;
@@ -613,6 +633,22 @@ static void ImportDisplayCaptureInfo(Service::Interface* self) {
 }
 
 
+static void AcquireRight(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    cmd_buff[1] = RESULT_SUCCESS.raw;
+    right_acquared = true;
+
+}
+
+static void ReleaseRight(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    cmd_buff[1] = RESULT_SUCCESS.raw;
+    right_acquared = false;
+
+}
+
 const Interface::FunctionInfo FunctionTable[] = {
     {0x00010082, WriteHWRegs,                   "WriteHWRegs"},
     {0x00020084, WriteHWRegsWithMask,           "WriteHWRegsWithMask"},
@@ -635,8 +671,8 @@ const Interface::FunctionInfo FunctionTable[] = {
     {0x00130042, RegisterInterruptRelayQueue,   "RegisterInterruptRelayQueue"},
     {0x00140000, UnregisterInterruptRelayQueue, "UnregisterInterruptRelayQueue"},
     {0x00150002, nullptr,                       "TryAcquireRight"},
-    {0x00160042, nullptr,                       "AcquireRight"},
-    {0x00170000, nullptr,                       "ReleaseRight"},
+    {0x00160042, AcquireRight,                  "AcquireRight"},
+    {0x00170000, ReleaseRight,                  "ReleaseRight"},
     {0x00180000, ImportDisplayCaptureInfo,      "ImportDisplayCaptureInfo"},
     {0x00190000, nullptr,                       "SaveVramSysArea"},
     {0x001A0000, nullptr,                       "RestoreVramSysArea"},
@@ -644,7 +680,7 @@ const Interface::FunctionInfo FunctionTable[] = {
     {0x001C0040, nullptr,                       "SetLedForceOff"},
     {0x001D0040, nullptr,                       "SetTestCommand"},
     {0x001E0080, nullptr,                       "SetInternalPriorities"},
-    {0x001F0082, nullptr,                       "StoreDataCache"},
+    {0x001F0082, StoreDataCache,                "StoreDataCache"},
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
