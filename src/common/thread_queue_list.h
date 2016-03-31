@@ -22,7 +22,7 @@ struct ThreadQueueList {
     // Number of priority levels. (Valid levels are [0..NUM_QUEUES).)
     static const Priority NUM_QUEUES = N;
 
-    ThreadQueueList() {
+    ThreadQueueList():queues(){
         first = nullptr;
     }
 
