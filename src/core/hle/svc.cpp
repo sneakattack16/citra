@@ -226,7 +226,7 @@ static ResultCode SendSyncRequest(Handle handle) {
         return ERR_INVALID_HANDLE;
     }
 
-    LOG_TRACE(Kernel_SVC, "called handle=0x%08X(%s)", handle, session->GetName().c_str());
+    //LOG_TRACE(Kernel_SVC, "called handle=0x%08X(%s)", handle, session->GetName().c_str());
 
     return session->SyncRequest().Code();
 }
@@ -285,6 +285,10 @@ static ResultCode WaitSynchronizationN(s32* out, Handle* handles, s32 handle_cou
     // NOTE: on real hardware, there is no nullptr check for 'out' (tested with firmware 4.4). If
     // this happens, the running application will crash.
     ASSERT_MSG(out != nullptr, "invalid output pointer specified!");
+
+    auto obj = Kernel::g_handle_table.GetWaitObject(handles[0]);
+    LOG_TRACE(Kernel_SVC, "called handle=0x%08X(%s:%s), nanoseconds=%lld", handles[0],
+        obj->GetTypeName().c_str(), obj->GetName().c_str(), nano_seconds);
 
     // Check if 'handle_count' is invalid
     if (handle_count < 0)
@@ -679,11 +683,12 @@ static ResultCode DuplicateHandle(Handle* out, Handle handle) {
 /// Signals an event
 static ResultCode SignalEvent(Handle handle) {
     using Kernel::Event;
-    LOG_TRACE(Kernel_SVC, "called event=0x%08X", handle);
 
     SharedPtr<Event> evt = Kernel::g_handle_table.Get<Kernel::Event>(handle);
     if (evt == nullptr)
         return ERR_INVALID_HANDLE;
+
+    LOG_DEBUG(Kernel_SVC, "called event=0x%08X, id=%d, name=%s", handle, evt->GetObjectId(), evt->GetName().c_str());
 
     evt->Signal();
 
@@ -693,11 +698,12 @@ static ResultCode SignalEvent(Handle handle) {
 /// Clears an event
 static ResultCode ClearEvent(Handle handle) {
     using Kernel::Event;
-    LOG_TRACE(Kernel_SVC, "called event=0x%08X", handle);
 
     SharedPtr<Event> evt = Kernel::g_handle_table.Get<Kernel::Event>(handle);
     if (evt == nullptr)
         return ERR_INVALID_HANDLE;
+
+    LOG_DEBUG(Kernel_SVC, "called event=0x%08X, id=%d, name=%s", handle, evt->GetObjectId(), evt->GetName().c_str());
 
     evt->Clear();
     return RESULT_SUCCESS;

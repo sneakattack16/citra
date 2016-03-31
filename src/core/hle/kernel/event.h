@@ -24,7 +24,7 @@ public:
      * @param reset_type ResetType describing how to create event
      * @param name Optional name of event
      */
-    static SharedPtr<Event> Create(ResetType reset_type, std::string name = "Unknown");
+    static SharedPtr<Event> Create(ResetType reset_type, std::string name = "Unknown Event");
 
     std::string GetTypeName() const override { return "Event"; }
     std::string GetName() const override { return name; }

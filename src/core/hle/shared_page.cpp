@@ -16,6 +16,7 @@ void Init() {
     std::memset(&shared_page, 0, sizeof(shared_page));
 
     shared_page.running_hw = 0x1; // product
+    shared_page.unknown_val = 0x1; // some games wont start until get 1 here
 }
 
 } // namespace

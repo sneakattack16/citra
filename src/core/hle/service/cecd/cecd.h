@@ -30,6 +30,10 @@ void GetCecInfoEventHandle(Service::Interface* self);
  */
 void GetChangeStateEventHandle(Service::Interface* self);
 
+void GetCecdState(Service::Interface* self);
+
+void OpenAndReadFile(Service::Interface* self);
+
 /// Initialize CECD service(s)
 void Init();
 
