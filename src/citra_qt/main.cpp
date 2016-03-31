@@ -3,6 +3,7 @@
 // Refer to the license.txt file included.
 
 #include <clocale>
+#include <memory>
 #include <thread>
 
 #include <QDesktopWidget>
@@ -30,7 +31,6 @@
 #include "citra_qt/debugger/ramview.h"
 #include "citra_qt/debugger/registers.h"
 
-#include "common/make_unique.h"
 #include "common/microprofile.h"
 #include "common/platform.h"
 #include "common/scm_rev.h"
@@ -323,7 +323,7 @@ void GMainWindow::BootGame(const std::string& filename) {
         return;
 
     // Create and start the emulation thread
-    emu_thread = Common::make_unique<EmuThread>(render_window);
+    emu_thread = std::make_unique<EmuThread>(render_window);
     emit EmulationStarting(emu_thread.get());
     render_window->moveContext();
     emu_thread->start();
@@ -421,7 +421,7 @@ void GMainWindow::UpdateRecentFiles() {
 }
 
 void GMainWindow::OnGameListLoadFile(QString game_path) {
-    BootGame(game_path.toLocal8Bit().data());
+    BootGame(game_path.toStdString());
 }
 
 void GMainWindow::OnMenuLoadFile() {
@@ -432,7 +432,7 @@ void GMainWindow::OnMenuLoadFile() {
     if (!filename.isEmpty()) {
         settings.setValue("romsPath", QFileInfo(filename).path());
 
-        BootGame(filename.toLocal8Bit().data());
+        BootGame(filename.toStdString());
     }
 }
 
@@ -444,7 +444,7 @@ void GMainWindow::OnMenuLoadSymbolMap() {
     if (!filename.isEmpty()) {
         settings.setValue("symbolsPath", QFileInfo(filename).path());
 
-        LoadSymbolMap(filename.toLocal8Bit().data());
+        LoadSymbolMap(filename.toStdString());
     }
 }
 
@@ -465,7 +465,7 @@ void GMainWindow::OnMenuRecentFile() {
     QString filename = action->data().toString();
     QFileInfo file_info(filename);
     if (file_info.exists()) {
-        BootGame(filename.toLocal8Bit().data());
+        BootGame(filename.toStdString());
     } else {
         // Display an error message and remove the file from the list.
         QMessageBox::information(this, tr("File not found"), tr("File \"%1\" not found").arg(filename));
