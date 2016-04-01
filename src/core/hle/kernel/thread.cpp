@@ -351,7 +351,7 @@ void Thread::ResumeFromWait() {
  * Prints the thread queue for debugging purposes
  */
 static void DebugThreadQueue() {
-    static bool out = true;
+    static bool out = false;
     if (!out)
         return;
     Thread* thread = GetCurrentThread();

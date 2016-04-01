@@ -247,8 +247,8 @@ static ResultCode WaitSynchronization1(Handle handle, s64 nano_seconds) {
     if (object == nullptr)
         return ERR_INVALID_HANDLE;
 
-    LOG_TRACE(Kernel_SVC, "called handle=0x%08X(%s:%s), nanoseconds=%lld", handle,
-            object->GetTypeName().c_str(), object->GetName().c_str(), nano_seconds);
+    LOG_DEBUG(Kernel_SVC, "called handle=0x%08X(%d:%s), nanoseconds=%lld", handle,
+            object->GetObjectId(), object->GetName().c_str(), nano_seconds);
 
     HLE::Reschedule(__func__);
 
@@ -286,9 +286,13 @@ static ResultCode WaitSynchronizationN(s32* out, Handle* handles, s32 handle_cou
     // this happens, the running application will crash.
     ASSERT_MSG(out != nullptr, "invalid output pointer specified!");
 
-    auto obj = Kernel::g_handle_table.GetWaitObject(handles[0]);
-    LOG_TRACE(Kernel_SVC, "called handle=0x%08X(%s:%s), nanoseconds=%lld", handles[0],
-        obj->GetTypeName().c_str(), obj->GetName().c_str(), nano_seconds);
+    std::ostringstream hndl_names;
+    for (s32 i = 0; i < handle_count; ++i) {
+        auto obj = Kernel::g_handle_table.GetWaitObject(handles[i]);
+        hndl_names << "0x" << std::hex << obj->GetObjectId() << ":" << obj->GetName() << ", ";
+
+    }
+    LOG_DEBUG(Kernel_SVC, "called handles=%s nanoseconds=%lld", hndl_names.str().c_str(), nano_seconds);
 
     // Check if 'handle_count' is invalid
     if (handle_count < 0)
@@ -392,7 +396,7 @@ static ResultCode CreateAddressArbiter(Handle* out_handle) {
 static ResultCode ArbitrateAddress(Handle handle, u32 address, u32 type, u32 value, s64 nanoseconds) {
     using Kernel::AddressArbiter;
 
-    LOG_TRACE(Kernel_SVC, "called handle=0x%08X, address=0x%08X, type=0x%08X, value=0x%08X", handle,
+    LOG_INFO(Kernel_SVC, "called handle=0x%08X, address=0x%08X, type=0x%08X, value=0x%08X", handle,
         address, type, value);
 
     SharedPtr<AddressArbiter> arbiter = Kernel::g_handle_table.Get<AddressArbiter>(handle);
@@ -688,7 +692,7 @@ static ResultCode SignalEvent(Handle handle) {
     if (evt == nullptr)
         return ERR_INVALID_HANDLE;
 
-    LOG_DEBUG(Kernel_SVC, "called event=0x%08X, id=%d, name=%s", handle, evt->GetObjectId(), evt->GetName().c_str());
+    LOG_DEBUG(Kernel_SVC, "called event=0x%08X, id=0x%X, name=%s", handle, evt->GetObjectId(), evt->GetName().c_str());
 
     evt->Signal();
 
@@ -703,7 +707,7 @@ static ResultCode ClearEvent(Handle handle) {
     if (evt == nullptr)
         return ERR_INVALID_HANDLE;
 
-    LOG_DEBUG(Kernel_SVC, "called event=0x%08X, id=%d, name=%s", handle, evt->GetObjectId(), evt->GetName().c_str());
+    LOG_DEBUG(Kernel_SVC, "called event=0x%08X, id=0x%X, name=%s", handle, evt->GetObjectId(), evt->GetName().c_str());
 
     evt->Clear();
     return RESULT_SUCCESS;
