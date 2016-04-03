@@ -247,7 +247,7 @@ static ResultCode WaitSynchronization1(Handle handle, s64 nano_seconds) {
     if (object == nullptr)
         return ERR_INVALID_HANDLE;
 
-    LOG_DEBUG(Kernel_SVC, "called handle=0x%08X(%d:%s), nanoseconds=%lld", handle,
+    LOG_TRACE(Kernel_SVC, "called handle=0x%08X(%d:%s), nanoseconds=%lld", handle,
             object->GetObjectId(), object->GetName().c_str(), nano_seconds);
 
     HLE::Reschedule(__func__);
@@ -292,7 +292,7 @@ static ResultCode WaitSynchronizationN(s32* out, Handle* handles, s32 handle_cou
         hndl_names << "0x" << std::hex << obj->GetObjectId() << ":" << obj->GetName() << ", ";
 
     }
-    LOG_DEBUG(Kernel_SVC, "called handles=%s nanoseconds=%lld", hndl_names.str().c_str(), nano_seconds);
+    LOG_TRACE(Kernel_SVC, "called handles=%s nanoseconds=%lld", hndl_names.str().c_str(), nano_seconds);
 
     // Check if 'handle_count' is invalid
     if (handle_count < 0)
@@ -396,8 +396,8 @@ static ResultCode CreateAddressArbiter(Handle* out_handle) {
 static ResultCode ArbitrateAddress(Handle handle, u32 address, u32 type, u32 value, s64 nanoseconds) {
     using Kernel::AddressArbiter;
 
-    LOG_INFO(Kernel_SVC, "called handle=0x%08X, address=0x%08X, type=0x%08X, value=0x%08X", handle,
-        address, type, value);
+    LOG_TRACE(Kernel_SVC, "called handle=0x%08X, address=0x%08X, type=0x%08X, value=0x%08X, data=0x%08X",
+        handle, address, type, value, Memory::Read32(address));
 
     SharedPtr<AddressArbiter> arbiter = Kernel::g_handle_table.Get<AddressArbiter>(handle);
     if (arbiter == nullptr)
@@ -480,7 +480,7 @@ static ResultCode CreateThread(Handle* out_handle, s32 priority, u32 entry_point
         TSymbol symbol = Symbols::GetSymbol(entry_point);
         name = symbol.name;
     } else {
-        name = Common::StringFromFormat("unknown-%08x", entry_point);
+        name = Common::StringFromFormat("unknown-%08x", /*entry_point*/ Memory::Read32(arg+8));
     }
 
     // TODO(bunnei): Implement resource limits to return an error code instead of the below assert.
@@ -672,8 +672,8 @@ static ResultCode CreateEvent(Handle* out_handle, u32 reset_type) {
     SharedPtr<Event> evt = Event::Create(static_cast<Kernel::ResetType>(reset_type));
     CASCADE_RESULT(*out_handle, Kernel::g_handle_table.Create(std::move(evt)));
 
-    LOG_TRACE(Kernel_SVC, "called reset_type=0x%08X : created handle=0x%08X",
-            reset_type, *out_handle);
+    LOG_TRACE(Kernel_SVC, "called reset_type=0x%08X : created handle=0x%08X, id=0x%X",
+            reset_type, *out_handle, evt->GetObjectId());
     return RESULT_SUCCESS;
 }
 
@@ -692,7 +692,7 @@ static ResultCode SignalEvent(Handle handle) {
     if (evt == nullptr)
         return ERR_INVALID_HANDLE;
 
-    LOG_DEBUG(Kernel_SVC, "called event=0x%08X, id=0x%X, name=%s", handle, evt->GetObjectId(), evt->GetName().c_str());
+    LOG_TRACE(Kernel_SVC, "called event=0x%08X, id=0x%X, name=%s", handle, evt->GetObjectId(), evt->GetName().c_str());
 
     evt->Signal();
 
@@ -707,7 +707,7 @@ static ResultCode ClearEvent(Handle handle) {
     if (evt == nullptr)
         return ERR_INVALID_HANDLE;
 
-    LOG_DEBUG(Kernel_SVC, "called event=0x%08X, id=0x%X, name=%s", handle, evt->GetObjectId(), evt->GetName().c_str());
+    LOG_TRACE(Kernel_SVC, "called event=0x%08X, id=0x%X, name=%s", handle, evt->GetObjectId(), evt->GetName().c_str());
 
     evt->Clear();
     return RESULT_SUCCESS;
@@ -869,7 +869,7 @@ static ResultCode GetProcessInfo(s64* out, Handle process_handle, u32 type) {
     case 2:
         // TODO(yuriks): Type 0 returns a slightly higher number than type 2, but I'm not sure
         // what's the difference between them.
-        *out = process->heap_used + process->linear_heap_used + process->misc_memory_used;
+        *out = (process->heap_used + process->linear_heap_used + process->misc_memory_used) & 0xFFFFFFFFFFFFF000ull;
         break;
     case 1:
     case 3:

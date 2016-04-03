@@ -84,7 +84,7 @@ private:
  */
 class Timer {
 public:
-    Timer(TimingCategory& category) : category(category) {
+    Timer(TimingCategory& category) : previous_timer(nullptr), category(category) {
     }
 
     void Start() {

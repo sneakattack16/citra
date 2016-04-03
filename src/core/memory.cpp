@@ -133,6 +133,10 @@ T Read(const VAddr vaddr) {
         return value;
     }
 
+    if (vaddr == 0x3ebca4) {
+        LOG_DEBUG(HW_Memory, "Memeory BP");
+    }
+
     PageType type = current_page_table->attributes[vaddr >> PAGE_BITS];
     switch (type) {
     case PageType::Unmapped:
@@ -158,6 +162,10 @@ void Write(const VAddr vaddr, const T data) {
     if (page_pointer) {
         std::memcpy(&page_pointer[vaddr & PAGE_MASK], &data, sizeof(T));
         return;
+    }
+
+    if(vaddr == 0x3ebca4) {
+        LOG_DEBUG(HW_Memory, "Memeory BP");
     }
 
     PageType type = current_page_table->attributes[vaddr >> PAGE_BITS];

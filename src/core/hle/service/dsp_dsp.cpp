@@ -167,6 +167,7 @@ static void RegisterInterruptEvents(Service::Interface* self) {
             interrupt_events[std::make_pair(interrupt, channel)] = evt;
             cmd_buff[1] = RESULT_SUCCESS.raw;
             LOG_INFO(Service_DSP, "Registered interrupt=%u, channel=%u, event_handle=0x%08X", interrupt, channel, event_handle);
+            evt->name = std::string("DSP_DSP_") + std::to_string(interrupt) + "_" + std::to_string(channel);
         } else {
             LOG_CRITICAL(Service_DSP, "Invalid event handle! interrupt=%u, channel=%u, event_handle=0x%08X", interrupt, channel, event_handle);
             ASSERT(false); // This should really be handled at a IPC translation layer.

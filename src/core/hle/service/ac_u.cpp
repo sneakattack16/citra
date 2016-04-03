@@ -3,6 +3,7 @@
 // Refer to the license.txt file included.
 
 #include "common/logging/log.h"
+#include "core/hle/kernel/event.h"
 #include "core/hle/service/ac_u.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -43,11 +44,32 @@ static void IsConnected(Service::Interface* self) {
     LOG_WARNING(Service_AC, "(STUBBED) called");
 }
 
+static void CloseAsync(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    auto evt = Kernel::g_handle_table.Get<Kernel::Event>(cmd_buff[4]);
+    if (evt) {
+        evt->name = "AC_U:close_event";
+        evt->Signal();
+    }
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+
+    LOG_WARNING(Service_AC, "(STUBBED) called");
+}
+
+static void GetCloseResult(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+    cmd_buff[2] = RESULT_SUCCESS.raw;
+    LOG_WARNING(Service_AC, "(STUBBED) called");
+}
+
 const Interface::FunctionInfo FunctionTable[] = {
     {0x00010000, nullptr,               "CreateDefaultConfig"},
     {0x00040006, nullptr,               "ConnectAsync"},
     {0x00050002, nullptr,               "GetConnectResult"},
-    {0x00080004, nullptr,               "CloseAsync"},
+    {0x00080004, CloseAsync,            "CloseAsync"},
     {0x00090002, nullptr,               "GetCloseResult"},
     {0x000A0000, nullptr,               "GetLastErrorCode"},
     {0x000D0000, GetWifiStatus,         "GetWifiStatus"},

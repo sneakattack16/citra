@@ -44,7 +44,7 @@ public:
 
     std::string name;   ///< Name of address arbiter object (optional)
 
-    ResultCode ArbitrateAddress(ArbitrationType type, VAddr address, s32 value, u64 nanoseconds);
+    static ResultCode ArbitrateAddress(ArbitrationType type, VAddr address, s32 value, u64 nanoseconds);
 
 private:
     AddressArbiter();

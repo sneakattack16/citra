@@ -133,7 +133,7 @@ void InitLegacyAddressSpace(Kernel::VMManager& address_space) {
 
     auto shared_page_vma = address_space.MapBackingMemory(SHARED_PAGE_VADDR,
             (u8*)&SharedPage::shared_page, SHARED_PAGE_SIZE, MemoryState::Shared).MoveFrom();
-    address_space.Reprotect(shared_page_vma, VMAPermission::Read);
+    address_space.Reprotect(shared_page_vma, VMAPermission::ReadWrite);
 
     AudioCore::AddAddressSpace(address_space);
 }
