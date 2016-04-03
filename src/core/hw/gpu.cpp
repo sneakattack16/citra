@@ -114,6 +114,9 @@ inline void Write(u32 addr, const T data) {
             if (config.address_start) { // Some games pass invalid values here
                 u8* start = Memory::GetPhysicalPointer(config.GetStartAddress());
                 u8* end = Memory::GetPhysicalPointer(config.GetEndAddress());
+                if(end==nullptr) {
+                    end = start + Memory::VRAM_SIZE;
+                }
 
                 // TODO: Consider always accelerating and returning vector of
                 //       regions that the accelerated fill did not cover to
@@ -124,27 +127,31 @@ inline void Write(u32 addr, const T data) {
                 //       Then fill all completely covered surfaces, and return the
                 //       regions that were between surfaces or within the touching
                 //       ones for cpu to manually fill here.
-                if (!VideoCore::g_renderer->Rasterizer()->AccelerateFill(config)) {
-                    Memory::RasterizerFlushAndInvalidateRegion(config.GetStartAddress(), config.GetEndAddress() - config.GetStartAddress());
+                if (start != nullptr && end != nullptr) {
+                    if (!VideoCore::g_renderer->Rasterizer()->AccelerateFill(config)) {
+                        Memory::RasterizerFlushAndInvalidateRegion(config.GetStartAddress(), config.GetEndAddress() - config.GetStartAddress());
 
-                    if (config.fill_24bit) {
-                        // fill with 24-bit values
-                        for (u8* ptr = start; ptr < end; ptr += 3) {
-                            ptr[0] = config.value_24bit_r;
-                            ptr[1] = config.value_24bit_g;
-                            ptr[2] = config.value_24bit_b;
+                        if (config.fill_24bit) {
+                            // fill with 24-bit values
+                            for (u8* ptr = start; ptr < end; ptr += 3) {
+                                ptr[0] = config.value_24bit_r;
+                                ptr[1] = config.value_24bit_g;
+                                ptr[2] = config.value_24bit_b;
+                            }
                         }
-                    } else if (config.fill_32bit) {
-                        // fill with 32-bit values
-                        u32 value = config.value_32bit;
-                        size_t len = (end - start) / sizeof(u32);
-                        for (size_t i = 0; i < len; ++i)
-                            memcpy(&start[i * sizeof(u32)], &value, sizeof(u32));
-                    } else {
-                        // fill with 16-bit values
-                        u16 value_16bit = config.value_16bit.Value();
-                        for (u8* ptr = start; ptr < end; ptr += sizeof(u16))
-                            memcpy(ptr, &value_16bit, sizeof(u16));
+                        else if (config.fill_32bit) {
+                            // fill with 32-bit values
+                            u32 value = config.value_32bit;
+                            size_t len = (end - start) / sizeof(u32);
+                            for (size_t i = 0; i < len; ++i)
+                                memcpy(&start[i * sizeof(u32)], &value, sizeof(u32));
+                        }
+                        else {
+                            // fill with 16-bit values
+                            u16 value_16bit = config.value_16bit.Value();
+                            for (u8* ptr = start; ptr < end; ptr += sizeof(u16))
+                                memcpy(ptr, &value_16bit, sizeof(u16));
+                        }
                     }
                 }
 
