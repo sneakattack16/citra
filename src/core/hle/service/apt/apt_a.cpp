@@ -27,6 +27,7 @@ const Interface::FunctionInfo FunctionTable[] = {
     {0x00430040, NotifyToWait,                 "NotifyToWait?"},
     {0x00440000, GetSharedFont,                "GetSharedFont?"},
     {0x004B00C2, AppletUtility,                "AppletUtility?"},
+    {0x004F0080, nullptr,                      "SetApplicationCpuTimeLimit"},
     {0x00550040, nullptr,                      "WriteInputToNsState?"},
 };
 

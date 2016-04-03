@@ -144,6 +144,8 @@ Thread* ArbitrateHighestPriorityThread(u32 address) {
 
     // If a thread was arbitrated, resume it
     if (nullptr != highest_priority_thread) {
+        LOG_INFO(Kernel, "Resume hi thread %X, address=0x%08X", highest_priority_thread->GetObjectId(),
+            address);
         highest_priority_thread->ResumeFromWait();
     }
 
@@ -153,8 +155,10 @@ Thread* ArbitrateHighestPriorityThread(u32 address) {
 void ArbitrateAllThreads(u32 address) {
     // Resume all threads found to be waiting on the address
     for (auto& thread : thread_list) {
-        if (CheckWait_AddressArbiter(thread.get(), address))
+        if (CheckWait_AddressArbiter(thread.get(), address)) {
+            LOG_INFO(Kernel, "Resume thread %X, address=0x%08X", thread->GetObjectId(), address);
             thread->ResumeFromWait();
+        }
     }
 }
 
@@ -351,7 +355,7 @@ void Thread::ResumeFromWait() {
  * Prints the thread queue for debugging purposes
  */
 static void DebugThreadQueue() {
-    static bool out = false;
+    static bool out = true;
     if (!out)
         return;
     Thread* thread = GetCurrentThread();
@@ -359,15 +363,17 @@ static void DebugThreadQueue() {
         LOG_DEBUG(Kernel, "------------------------ Current: NO CURRENT THREAD");
     }
     else {
-        LOG_DEBUG(Kernel, "------------------------ %d %u (current)", thread->current_priority, GetCurrentThread()->GetObjectId());
+        u32 pc = thread->context.cpu_registers[14];
+        LOG_DEBUG(Kernel, "------------------------ Prio: %d Id: 0x%x (current), lr=0x%08X", thread->current_priority, GetCurrentThread()->GetObjectId(), pc);
     }
 
     for (auto& t : thread_list) {
         if (t->status == THREADSTATUS_DEAD)
             continue;
+        u32 pc = t->context.cpu_registers[14];
         s32 priority = ready_queue.contains(t.get());
         if (priority != -1) {
-            LOG_DEBUG(Kernel, "Priority: %d, id: %u, name: %s", priority, t->GetObjectId(), t->name.c_str());
+            LOG_DEBUG(Kernel, "Prio: %x, id: 0x%x, name: %s", priority, t->GetObjectId(), t->name.c_str());
         }
         else {
             std::string waiting;
@@ -383,16 +389,19 @@ static void DebugThreadQueue() {
             }
             if (waiting.size() == 0) {
                 switch (t->status) {
-                case     THREADSTATUS_RUNNING:       waiting = "Running"; break;
-                case     THREADSTATUS_READY:         waiting = "Ready to run"; break;
-                case     THREADSTATUS_WAIT_ARB:      waiting = "Waiting on an arb"; break;
-                case     THREADSTATUS_WAIT_SLEEP:    waiting = "Waiting SleepThread SVC"; break;
-                case     THREADSTATUS_WAIT_SYNCH:    waiting = "Waiting WaitSynchronization SVC"; break;
-                case     THREADSTATUS_DORMANT:       waiting = "Created but not yet made ready"; break;
-                case     THREADSTATUS_DEAD:          waiting = "Run to completion, or forcefully terminated"; break;
+                case     THREADSTATUS_RUNNING:       waiting = "Running, "; break;
+                case     THREADSTATUS_READY:         waiting = "Ready to run, "; break;
+                case     THREADSTATUS_WAIT_ARB:      waiting = "Waiting on an arb, "; break;
+                case     THREADSTATUS_WAIT_SLEEP:    waiting = "Waiting SleepThread SVC, "; break;
+                case     THREADSTATUS_WAIT_SYNCH:    waiting = "Waiting WaitSynchronization SVC, "; break;
+                case     THREADSTATUS_DORMANT:       waiting = "Created but not yet made ready, "; break;
+                case     THREADSTATUS_DEAD:          waiting = "Run to completion, or forcefully terminated, "; break;
                 }
             }
-            LOG_DEBUG(Kernel, "id: %u, name: %s, wa: 0x%08X, status: %s, val = %d", t->GetObjectId(), t->name.c_str(), wait_addr, waiting.c_str(), val);
+            if(wait_addr)
+                LOG_DEBUG(Kernel, "id: 0x%X, name: %s, wa: 0x%08X, status: %s val = %d, lr=0x%08X", t->GetObjectId(), t->name.c_str(), wait_addr, waiting.c_str(), val, pc);
+            else
+                LOG_DEBUG(Kernel, "id: 0x%X, name: %s, status: %s, lr=0x%08X", t->GetObjectId(), t->name.c_str(), waiting.c_str(), pc);
         }
     }
 }

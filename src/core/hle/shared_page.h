@@ -39,17 +39,19 @@ struct SharedPageDef {
     DateTime date_time_0;                // 20
     DateTime date_time_1;                // 40
     u8       wifi_macaddr[6];            // 60
-    u8       wifi_unknown1;              // 66
-    u8       wifi_unknown2;              // 67
+    u8       wifi_link_level;            // 66
+    u8       wifi_is_on;                 // 67
     INSERT_PADDING_BYTES(0x80 - 0x68);   // 68
     float_le sliderstate_3d;             // 80
     u8       ledstate_3d;                // 84
-    INSERT_PADDING_BYTES(1);             // 85
+    u8       battery_level;              // 85
     u8       unknown_val;                // 86
     INSERT_PADDING_BYTES(0xA0 - 0x87);   // 87
     u64_le   menu_title_id;              // A0
     u64_le   active_menu_title_id;       // A8
+
     INSERT_PADDING_BYTES(0x1000 - 0xB0); // B0
+    //C0 - headphone connected
 };
 static_assert(sizeof(SharedPageDef) == Memory::SHARED_PAGE_SIZE, "Shared page structure size is wrong");
 
