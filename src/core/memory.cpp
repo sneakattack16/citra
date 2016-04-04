@@ -133,9 +133,8 @@ T Read(const VAddr vaddr) {
         return value;
     }
 
-    u32 bpa = 0x61DD68; // 0x3ebca4
-    if (vaddr == bpa) {
-        LOG_DEBUG(HW_Memory, "Memory read BP=0x%08X", bpa);
+    if (vaddr == 0x3ebca4) {
+        LOG_DEBUG(HW_Memory, "Memeory BP");
     }
 
     PageType type = current_page_table->attributes[vaddr >> PAGE_BITS];
@@ -165,9 +164,8 @@ void Write(const VAddr vaddr, const T data) {
         return;
     }
 
-    u32 bpa = 0x61DD68; // 0x3ebca4
-    if(vaddr == bpa) {
-        LOG_DEBUG(HW_Memory, "Memory write BP=0x%08X", bpa);
+    if(vaddr == 0x3ebca4) {
+        LOG_DEBUG(HW_Memory, "Memeory BP");
     }
 
     PageType type = current_page_table->attributes[vaddr >> PAGE_BITS];
