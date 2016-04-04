@@ -158,6 +158,10 @@ u8 ARMul_UnsignedSaturatedSub8(u8 left, u8 right)
     if (left <= right)
         return 0;
 
+    if ((left - right) > 255) {
+        return 255;
+    }
+
     return left - right;
 }
 

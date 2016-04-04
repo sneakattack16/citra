@@ -478,9 +478,9 @@ static ResultCode CreateThread(Handle* out_handle, s32 priority, u32 entry_point
     std::string name;
     if (Symbols::HasSymbol(entry_point)) {
         TSymbol symbol = Symbols::GetSymbol(entry_point);
-        name = symbol.name;
+        name = Common::StringFromFormat("%s-%08x", symbol.name, entry_point);
     } else {
-        name = Common::StringFromFormat("unknown-%08x", /*entry_point*/ Memory::Read32(arg+8));
+        name = Common::StringFromFormat("unk_thrd-%08x", /*entry_point*/ Memory::Read32(arg+8));
     }
 
     // TODO(bunnei): Implement resource limits to return an error code instead of the below assert.

@@ -363,14 +363,14 @@ static void DebugThreadQueue() {
         LOG_DEBUG(Kernel, "------------------------ Current: NO CURRENT THREAD");
     }
     else {
-        u32 pc = thread->context.cpu_registers[14];
-        LOG_DEBUG(Kernel, "------------------------ Prio: %d Id: 0x%x (current), lr=0x%08X", thread->current_priority, GetCurrentThread()->GetObjectId(), pc);
+        u32 lr = thread->context.cpu_registers[14];
+        LOG_DEBUG(Kernel, "------------------------ Prio: %d Id: 0x%x (current), lr=0x%08X", thread->current_priority, GetCurrentThread()->GetObjectId(), lr);
     }
 
     for (auto& t : thread_list) {
-        if (t->status == THREADSTATUS_DEAD)
-            continue;
-        u32 pc = t->context.cpu_registers[14];
+        //if (t->status == THREADSTATUS_DEAD)
+        //    continue;
+        u32 lr = t->context.cpu_registers[14];
         s32 priority = ready_queue.contains(t.get());
         if (priority != -1) {
             LOG_DEBUG(Kernel, "Prio: %x, id: 0x%x, name: %s", priority, t->GetObjectId(), t->name.c_str());
@@ -399,9 +399,9 @@ static void DebugThreadQueue() {
                 }
             }
             if(wait_addr)
-                LOG_DEBUG(Kernel, "id: 0x%X, name: %s, wa: 0x%08X, status: %s val = %d, lr=0x%08X", t->GetObjectId(), t->name.c_str(), wait_addr, waiting.c_str(), val, pc);
+                LOG_DEBUG(Kernel, "id: 0x%X, name: %s, wa: 0x%08X, status: %s val = %d, lr=0x%08X", t->GetObjectId(), t->name.c_str(), wait_addr, waiting.c_str(), val, lr);
             else
-                LOG_DEBUG(Kernel, "id: 0x%X, name: %s, status: %s, lr=0x%08X", t->GetObjectId(), t->name.c_str(), waiting.c_str(), pc);
+                LOG_DEBUG(Kernel, "id: 0x%X, name: %s, status: %s, lr=0x%08X", t->GetObjectId(), t->name.c_str(), waiting.c_str(), lr);
         }
     }
 }
