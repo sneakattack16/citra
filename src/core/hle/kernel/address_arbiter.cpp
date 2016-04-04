@@ -30,8 +30,9 @@ SharedPtr<AddressArbiter> AddressArbiter::Create(std::string name) {
 ResultCode AddressArbiter::ArbitrateAddress(ArbitrationType type, VAddr address, s32 value,
         u64 nanoseconds) {
 
-    if (address == /*0x3ebca4*/ 0x61DD68) {
-        LOG_DEBUG(Kernel, "ArbitrateAddress Memory BP, 0x3ebca4");
+    u32 bpa = 0x61DD68; //0x3ebca4
+    if (address ==  bpa) {
+        LOG_DEBUG(Kernel, "ArbitrateAddress Memory BP, 0x%08X = 0x%08X", bpa, Memory::Read32(address));
         //return RESULT_SUCCESS;
     }
 
