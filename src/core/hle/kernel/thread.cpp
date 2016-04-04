@@ -144,7 +144,7 @@ Thread* ArbitrateHighestPriorityThread(u32 address) {
 
     // If a thread was arbitrated, resume it
     if (nullptr != highest_priority_thread) {
-        LOG_INFO(Kernel, "Resume hi thread %X, address=0x%08X", highest_priority_thread->GetObjectId(),
+        LOG_TRACE(Kernel, "Resume hi thread %X, address=0x%08X", highest_priority_thread->GetObjectId(),
             address);
         highest_priority_thread->ResumeFromWait();
     }
@@ -156,7 +156,7 @@ void ArbitrateAllThreads(u32 address) {
     // Resume all threads found to be waiting on the address
     for (auto& thread : thread_list) {
         if (CheckWait_AddressArbiter(thread.get(), address)) {
-            LOG_INFO(Kernel, "Resume thread %X, address=0x%08X", thread->GetObjectId(), address);
+            LOG_TRACE(Kernel, "Resume thread %X, address=0x%08X", thread->GetObjectId(), address);
             thread->ResumeFromWait();
         }
     }
@@ -355,7 +355,7 @@ void Thread::ResumeFromWait() {
  * Prints the thread queue for debugging purposes
  */
 static void DebugThreadQueue() {
-    static bool out = true;
+    static bool out = false;
     if (!out)
         return;
     Thread* thread = GetCurrentThread();

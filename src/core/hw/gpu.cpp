@@ -115,7 +115,7 @@ inline void Write(u32 addr, const T data) {
                 u8* start = Memory::GetPhysicalPointer(config.GetStartAddress());
                 u8* end = Memory::GetPhysicalPointer(config.GetEndAddress());
                 if(end==nullptr) {
-                    end = start + Memory::VRAM_SIZE;
+                    //end = start + Memory::VRAM_SIZE;
                 }
 
                 // TODO: Consider always accelerating and returning vector of
