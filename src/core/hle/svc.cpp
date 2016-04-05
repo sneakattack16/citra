@@ -518,7 +518,7 @@ static ResultCode CreateThread(Handle* out_handle, s32 priority, u32 entry_point
 
 /// Called when a thread exits
 static void ExitThread() {
-    LOG_TRACE(Kernel_SVC, "called, pc=0x%08X", Core::g_app_core->GetPC());
+    LOG_DEBUG(Kernel_SVC, "called, name: %s", Kernel::GetCurrentThread()->GetName().c_str());
 
     Kernel::GetCurrentThread()->Stop();
 }
