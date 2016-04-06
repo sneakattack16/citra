@@ -225,7 +225,7 @@ void Write(const VAddr vaddr, const T data) {
     }
 
     if(vaddr == 0x3ebca4) {
-        LOG_DEBUG(HW_Memory, "Memeory BP");
+        LOG_DEBUG(HW_Memory, "Memory BP");
     }
 
     PageType type = current_page_table->attributes[vaddr >> PAGE_BITS];
