@@ -246,29 +246,32 @@ ResultStatus AppLoader_NCCH::Load() {
     if (file.ReadBytes(&exheader_header, sizeof(ExHeader_Header)) != sizeof(ExHeader_Header))
         return ResultStatus::Error;
 
-    is_compressed           = (exheader_header.codeset_info.flags.flag & 1) == 1;
-    entry_point             = exheader_header.codeset_info.text.address;
-    code_size               = exheader_header.codeset_info.text.code_size;
-    stack_size              = exheader_header.codeset_info.stack_size;
-    bss_size                = exheader_header.codeset_info.bss_size;
-    core_version            = exheader_header.arm11_system_local_caps.core_version;
-    priority                = exheader_header.arm11_system_local_caps.priority;
-    resource_limit_category = exheader_header.arm11_system_local_caps.resource_limit_category;
+    if (exheader_header.arm11_system_local_caps.program_id == ncch_header.program_id) {
+        is_compressed = (exheader_header.codeset_info.flags.flag & 1) == 1;
+        entry_point = exheader_header.codeset_info.text.address;
+        code_size = exheader_header.codeset_info.text.code_size;
+        stack_size = exheader_header.codeset_info.stack_size;
+        bss_size = exheader_header.codeset_info.bss_size;
+        core_version = exheader_header.arm11_system_local_caps.core_version;
+        priority = exheader_header.arm11_system_local_caps.priority;
+        resource_limit_category = exheader_header.arm11_system_local_caps.resource_limit_category;
 
-    LOG_INFO(Loader,  "Name:                        %s"    , exheader_header.codeset_info.name);
-    LOG_INFO(Loader,  "Program ID:                  %016X" , ncch_header.program_id);
-    LOG_DEBUG(Loader, "Code compressed:             %s"    , is_compressed ? "yes" : "no");
-    LOG_DEBUG(Loader, "Entry point:                 0x%08X", entry_point);
-    LOG_DEBUG(Loader, "Code size:                   0x%08X", code_size);
-    LOG_DEBUG(Loader, "Stack size:                  0x%08X", stack_size);
-    LOG_DEBUG(Loader, "Bss size:                    0x%08X", bss_size);
-    LOG_DEBUG(Loader, "Core version:                %d"    , core_version);
-    LOG_DEBUG(Loader, "Thread priority:             0x%X"  , priority);
-    LOG_DEBUG(Loader, "Resource limit category:     %d"    , resource_limit_category);
-
-    if (exheader_header.arm11_system_local_caps.program_id != ncch_header.program_id) {
+        LOG_INFO(Loader, "Name:                        %s", exheader_header.codeset_info.name);
+        LOG_INFO(Loader, "Program ID:                  %016X", ncch_header.program_id);
+        LOG_DEBUG(Loader, "Code compressed:             %s", is_compressed ? "yes" : "no");
+        LOG_DEBUG(Loader, "Entry point:                 0x%08X", entry_point);
+        LOG_DEBUG(Loader, "Code size:                   0x%08X", code_size);
+        LOG_DEBUG(Loader, "Stack size:                  0x%08X", stack_size);
+        LOG_DEBUG(Loader, "Bss size:                    0x%08X", bss_size);
+        LOG_DEBUG(Loader, "Core version:                %d", core_version);
+        LOG_DEBUG(Loader, "Thread priority:             0x%X", priority);
+        LOG_DEBUG(Loader, "Resource limit category:     %d", resource_limit_category);
+    } else {
         LOG_ERROR(Loader, "ExHeader Program ID mismatch: the ROM is probably encrypted.");
-        return ResultStatus::ErrorEncrypted;
+        //return ResultStatus::ErrorEncrypted;
+
+        is_compressed = true;
+
     }
 
     // Read ExeFS...
