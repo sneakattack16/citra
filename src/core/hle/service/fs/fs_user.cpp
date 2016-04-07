@@ -870,7 +870,7 @@ const Interface::FunctionInfo FunctionTable[] = {
     {0x080A0244, RenameDirectory,          "RenameDirectory"},
     {0x080B0102, OpenDirectory,            "OpenDirectory"},
     {0x080C00C2, OpenArchive,              "OpenArchive"},
-    {0x080D0144, nullptr,                  "ControlArchive"},
+    {0x080D0144, ControlArchive,           "ControlArchive"},
     {0x080E0080, CloseArchive,             "CloseArchive"},
     {0x080F0180, FormatThisUserSaveData,   "FormatThisUserSaveData"},
     {0x08100200, nullptr,                  "CreateSystemSaveData"},

@@ -20,7 +20,7 @@ void GetCecdState(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
     cmd_buff[1] = RESULT_SUCCESS.raw; // No error
-    cmd_buff[2] = 0;
+    cmd_buff[2] = 1;
 
     LOG_WARNING(Service_CECD, "(STUBBED) called");
 }

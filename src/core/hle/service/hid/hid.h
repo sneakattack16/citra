@@ -175,7 +175,7 @@ struct GyroscopeCalibrateParam {
 // TODO: MSVC does not support using offsetof() on non-static data members even though this
 //       is technically allowed since C++11. This macro should be enabled once MSVC adds
 //       support for that.
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
 #define ASSERT_REG_POSITION(field_name, position)                  \
     static_assert(offsetof(SharedMem, field_name) == position * 4, \
                   "Field "#field_name" has invalid position")
@@ -184,7 +184,7 @@ ASSERT_REG_POSITION(pad.index_reset_ticks, 0x0);
 ASSERT_REG_POSITION(touch.index_reset_ticks, 0x2A);
 
 #undef ASSERT_REG_POSITION
-#endif // !defined(_MSC_VER)
+//#endif // !defined(_MSC_VER)
 
 // Pre-defined PadStates for single button presses
 const PadState PAD_NONE         = {{0}};

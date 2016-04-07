@@ -288,8 +288,8 @@ static ResultCode WaitSynchronizationN(s32* out, Handle* handles, s32 handle_cou
 
     std::ostringstream hndl_names;
     for (s32 i = 0; i < handle_count; ++i) {
-        auto obj = Kernel::g_handle_table.GetWaitObject(handles[i]);
-        hndl_names << "0x" << std::hex << obj->GetObjectId() << ":" << obj->GetName() << ", ";
+        //auto obj = Kernel::g_handle_table.GetWaitObject(handles[i]);
+        //hndl_names << "0x" << std::hex << obj->GetObjectId() << ":" << obj->GetName() << ", ";
 
     }
     LOG_TRACE(Kernel_SVC, "called handles=%s nanoseconds=%lld", hndl_names.str().c_str(), nano_seconds);
