@@ -49,6 +49,13 @@ static void GetServiceHandle(Service::Interface* self) {
     cmd_buff[1] = res.raw;
 }
 
+static void Subscribe(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    cmd_buff[1] = 0; // No error
+    LOG_TRACE(Service_SRV, "called AppletId=0x%08X", cmd_buff[1]);
+}
+
 const Interface::FunctionInfo FunctionTable[] = {
     {0x00010002, Initialize,          "Initialize"},
     {0x00020000, GetProcSemaphore,    "GetProcSemaphore"},
@@ -56,7 +63,7 @@ const Interface::FunctionInfo FunctionTable[] = {
     {0x000400C0, nullptr,             "UnregisterService"},
     {0x00050100, GetServiceHandle,    "GetServiceHandle"},
     {0x000600C2, nullptr,             "RegisterHandle"},
-    {0x00090040, nullptr,             "Subscribe"},
+    {0x00090040, Subscribe,           "Subscribe"},
     {0x000B0000, nullptr,             "ReceiveNotification"},
     {0x000C0080, nullptr,             "PublishToSubscriber"},
 };

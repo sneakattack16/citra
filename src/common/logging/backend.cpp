@@ -40,8 +40,10 @@ namespace Log {
         SUB(Service, GSP) \
         SUB(Service, AC) \
         SUB(Service, AM) \
+        SUB(Service, BOSS) \
         SUB(Service, PTM) \
         SUB(Service, LDR) \
+        SUB(Service, MIC) \
         SUB(Service, NDM) \
         SUB(Service, NIM) \
         SUB(Service, NWM) \

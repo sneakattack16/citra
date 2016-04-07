@@ -5,7 +5,15 @@
 #pragma once
 
 namespace Service {
+
+class Interface;
+
 namespace BOSS {
+
+void InitializeSession(Service::Interface* self);
+void GetOptoutFlag(Service::Interface* self);
+void GetTaskIdList(Service::Interface* self);
+void ReceiveProperty(Service::Interface* self);
 
 /// Initialize BOSS service(s)
 void Init();

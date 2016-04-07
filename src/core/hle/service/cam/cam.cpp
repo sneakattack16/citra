@@ -15,7 +15,7 @@
 namespace Service {
 namespace CAM {
 
-static const u32 TRANSFER_BYTES = 5 * 1024;
+static u32 transfer_bytes = 5 * 1024;
 
 static Kernel::SharedPtr<Kernel::Event> completion_event_cam1;
 static Kernel::SharedPtr<Kernel::Event> completion_event_cam2;
@@ -30,6 +30,11 @@ void StartCapture(Service::Interface* self) {
     cmd_buff[0] = IPC::MakeHeader(0x1, 1, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw;
 
+    Kernel::Event* completion_event = (Port)port == Port::Cam2 ?
+        completion_event_cam2.get() : completion_event_cam1.get();
+
+    completion_event->Signal();
+
     LOG_WARNING(Service_CAM, "(STUBBED) called, port=%d", port);
 }
 
@@ -39,6 +44,27 @@ void StopCapture(Service::Interface* self) {
     u8 port = cmd_buff[1] & 0xFF;
 
     cmd_buff[0] = IPC::MakeHeader(0x2, 1, 0);
+    cmd_buff[1] = RESULT_SUCCESS.raw;
+
+    LOG_WARNING(Service_CAM, "(STUBBED) called, port=%d", port);
+}
+
+void IsBusy(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    u8 port = cmd_buff[1] & 0xFF;
+
+    cmd_buff[1] = RESULT_SUCCESS.raw;
+    cmd_buff[2] = 0;
+
+    LOG_WARNING(Service_CAM, "(STUBBED) called, port=%d", port);
+}
+
+void ClearBuffer(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    u8 port = cmd_buff[1] & 0xFF;
+
     cmd_buff[1] = RESULT_SUCCESS.raw;
 
     LOG_WARNING(Service_CAM, "(STUBBED) called, port=%d", port);
@@ -81,7 +107,7 @@ void SetReceiving(Service::Interface* self) {
     Kernel::Event* completion_event = (Port)port == Port::Cam2 ?
             completion_event_cam2.get() : completion_event_cam1.get();
 
-    completion_event->Signal();
+    //completion_event->Signal();
 
     cmd_buff[0] = IPC::MakeHeader(0x7, 1, 2);
     cmd_buff[1] = RESULT_SUCCESS.raw;
@@ -115,10 +141,23 @@ void GetMaxLines(Service::Interface* self) {
 
     cmd_buff[0] = IPC::MakeHeader(0xA, 2, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw;
-    cmd_buff[2] = TRANSFER_BYTES / (2 * width);
+    cmd_buff[2] = transfer_bytes / (2 * width);
 
     LOG_WARNING(Service_CAM, "(STUBBED) called, width=%d, height=%d, lines = %d",
             width, height, cmd_buff[2]);
+}
+
+void SetTransferBytes(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    u8 port = cmd_buff[1] & 0xFF;
+    transfer_bytes = cmd_buff[2];
+    s16 width = cmd_buff[3] & 0xFFFF;
+    s16 height = cmd_buff[4] & 0xFFFF;
+
+    cmd_buff[1] = RESULT_SUCCESS.raw;
+
+    LOG_WARNING(Service_CAM, "(STUBBED) called, transfer_bytes=%d", transfer_bytes);
 }
 
 void GetTransferBytes(Service::Interface* self) {
@@ -128,7 +167,7 @@ void GetTransferBytes(Service::Interface* self) {
 
     cmd_buff[0] = IPC::MakeHeader(0xC, 2, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw;
-    cmd_buff[2] = TRANSFER_BYTES;
+    cmd_buff[2] = transfer_bytes;
 
     LOG_WARNING(Service_CAM, "(STUBBED) called, port=%d", port);
 }
@@ -143,6 +182,20 @@ void SetTrimming(Service::Interface* self) {
     cmd_buff[1] = RESULT_SUCCESS.raw;
 
     LOG_WARNING(Service_CAM, "(STUBBED) called, port=%d, trim=%d", port, trim);
+}
+
+void SetTrimmingParams(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    u8  port   = cmd_buff[1] & 0xFF;
+    s16 xStart = cmd_buff[2] & 0xFFFF;
+    s16 yStart = cmd_buff[3] & 0xFFFF;
+    s16 xEnd   = cmd_buff[4] & 0xFFFF;
+    s16 yEnd   = cmd_buff[5] & 0xFFFF;
+
+    cmd_buff[1] = RESULT_SUCCESS.raw;
+
+    LOG_WARNING(Service_CAM, "(STUBBED) called, port=%d", port);
 }
 
 void SetTrimmingParamsCenter(Service::Interface* self) {
@@ -169,8 +222,7 @@ void Activate(Service::Interface* self) {
     cmd_buff[0] = IPC::MakeHeader(0x13, 1, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw;
 
-    LOG_WARNING(Service_CAM, "(STUBBED) called, cam_select=%d",
-            cam_select);
+    LOG_WARNING(Service_CAM, "(STUBBED) called, cam_select=%d", cam_select);
 }
 
 void FlipImage(Service::Interface* self) {
@@ -185,6 +237,23 @@ void FlipImage(Service::Interface* self) {
 
     LOG_WARNING(Service_CAM, "(STUBBED) called, cam_select=%d, flip=%d, context=%d",
             cam_select, flip, context);
+}
+
+void SetDetailSize(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    u8 cam_select = cmd_buff[1] & 0xFF;
+    s16 width = cmd_buff[2] & 0xFFFF;
+    s16 height = cmd_buff[3] & 0xFFFF;
+    s16 cropX0 = cmd_buff[4] & 0xFFFF;
+    s16 cropY0 = cmd_buff[5] & 0xFFFF;
+    s16 cropX1 = cmd_buff[6] & 0xFFFF;
+    s16 cropY1 = cmd_buff[7] & 0xFFFF;
+    Context context = static_cast<Context>(cmd_buff[8] & 0xFF);
+
+    cmd_buff[1] = RESULT_SUCCESS.raw;
+
+    LOG_WARNING(Service_CAM, "(STUBBED) called, cam_select=%d", cam_select);
 }
 
 void SetSize(Service::Interface* self) {

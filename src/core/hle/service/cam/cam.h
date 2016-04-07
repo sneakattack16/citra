@@ -8,10 +8,10 @@
 #include "common/common_types.h"
 #include "common/swap.h"
 
-#include "core/hle/kernel/kernel.h"
-#include "core/hle/service/service.h"
-
 namespace Service {
+
+class Interface;
+
 namespace CAM {
 
 enum class Port : u8 {
@@ -223,6 +223,11 @@ void StopCapture(Service::Interface* self);
  *      2: Descriptor: Handle
  *      3: Event handle
  */
+
+void IsBusy(Service::Interface* self);
+
+void ClearBuffer(Service::Interface* self);
+
 void GetVsyncInterruptEvent(Service::Interface* self);
 
 /**
@@ -285,6 +290,8 @@ void SetTransferLines(Service::Interface* self);
  */
 void GetMaxLines(Service::Interface* self);
 
+void SetTransferBytes(Service::Interface* self);
+
 /**
  * Unknown
  *  Inputs:
@@ -308,6 +315,8 @@ void GetTransferBytes(Service::Interface* self);
  *      1: ResultCode
  */
 void SetTrimming(Service::Interface* self);
+
+void SetTrimmingParams(Service::Interface* self);
 
 /**
  * Unknown
@@ -347,6 +356,8 @@ void Activate(Service::Interface* self);
  *      1: ResultCode
  */
 void FlipImage(Service::Interface* self);
+
+void SetDetailSize(Service::Interface* self);
 
 /**
  * Unknown

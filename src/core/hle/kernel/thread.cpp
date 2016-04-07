@@ -395,7 +395,7 @@ static void DebugThreadQueue() {
                 case     THREADSTATUS_WAIT_SLEEP:    waiting = "Waiting SleepThread SVC, "; break;
                 case     THREADSTATUS_WAIT_SYNCH:    waiting = "Waiting WaitSynchronization SVC, "; break;
                 case     THREADSTATUS_DORMANT:       waiting = "Created but not yet made ready, "; break;
-                case     THREADSTATUS_DEAD:          waiting = "Run to completion, or forcefully terminated, "; break;
+                case     THREADSTATUS_DEAD:          waiting = "Died, "; break;
                 }
             }
             if(wait_addr)
