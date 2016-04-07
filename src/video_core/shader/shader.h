@@ -74,7 +74,7 @@ struct OutputVertex {
         return ret;
     }
 };
-static_assert(std::is_pod<OutputVertex>::value, "Structure is not POD");
+//static_assert(std::is_pod<OutputVertex>::value, "Structure is not POD");
 static_assert(sizeof(OutputVertex) == 32 * sizeof(float), "OutputVertex has invalid size");
 
 /// Vertex shader memory
