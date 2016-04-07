@@ -25,7 +25,7 @@ GraphicsDebugger g_debugger;
 // Beginning address of HW regs
 const static u32 REGS_BEGIN = 0x1EB00000;
 
-static bool right_acquared = false;
+static bool gpu_right_acquared = false;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Namespace GSP_GPU
 
@@ -386,7 +386,7 @@ static void UnregisterInterruptRelayQueue(Service::Interface* self) {
  * @todo This probably does not belong in the GSP module, instead move to video_core
  */
 void SignalInterrupt(InterruptId interrupt_id) {
-    if (!right_acquared) {
+    if (!gpu_right_acquared) {
         //LOG_WARNING(Service_GSP, "right not acquared!");
         return;
     }
@@ -652,7 +652,7 @@ static void AcquireRight(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
     cmd_buff[1] = RESULT_SUCCESS.raw;
-    right_acquared = true;
+    gpu_right_acquared = true;
 
 }
 
@@ -660,7 +660,7 @@ static void ReleaseRight(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
     cmd_buff[1] = RESULT_SUCCESS.raw;
-    right_acquared = false;
+    gpu_right_acquared = false;
 
 }
 

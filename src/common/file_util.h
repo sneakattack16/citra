@@ -75,6 +75,9 @@ u64 GetSize(const int fd);
 // Overloaded GetSize, accepts FILE*
 u64 GetSize(FILE *f);
 
+// Return file timestamp
+u64 GetTimeStamp(const std::string &filename);
+
 // Returns true if successful, or path already exists.
 bool CreateDir(const std::string &filename);
 

@@ -179,7 +179,7 @@ T Read(const VAddr vaddr) {
     }
 
     if (vaddr == 0x3ebca4) {
-        LOG_DEBUG(HW_Memory, "Memeory BP");
+        LOG_DEBUG(HW_Memory, "Memory BP");
     }
 
     PageType type = current_page_table->attributes[vaddr >> PAGE_BITS];
@@ -231,7 +231,8 @@ void Write(const VAddr vaddr, const T data) {
     PageType type = current_page_table->attributes[vaddr >> PAGE_BITS];
     switch (type) {
     case PageType::Unmapped:
-        LOG_ERROR(HW_Memory, "unmapped Write%lu 0x%08X @ 0x%08X", sizeof(data) * 8, (u32) data, vaddr);
+        LOG_ERROR(HW_Memory, "unmapped Write%lu 0x%08X @ 0x%08X, pc: 0x%08X", sizeof(data) * 8,
+            (u32) data, vaddr, Core::g_app_core->GetPC());
         return;
     case PageType::Memory:
         ASSERT_MSG(false, "Mapped memory page without a pointer @ %08X", vaddr);
@@ -268,7 +269,7 @@ u8* GetPointer(const VAddr vaddr) {
         return GetPointerFromVMA(vaddr);
     }
 
-    LOG_ERROR(HW_Memory, "unknown GetPointer @ 0x%08x", vaddr);
+    LOG_ERROR(HW_Memory, "unknown GetPointer @ 0x%08x, pc: 0x%08X", vaddr, Core::g_app_core->GetPC());
     return nullptr;
 }
 
@@ -425,10 +426,9 @@ PAddr VirtualToPhysicalAddress(const VAddr addr) {
     } else if (addr >= NEW_LINEAR_HEAP_VADDR && addr < NEW_LINEAR_HEAP_VADDR_END) {
         return addr - NEW_LINEAR_HEAP_VADDR + FCRAM_PADDR;
     }
-
-    LOG_ERROR(HW_Memory, "Unknown virtual address @ 0x%08X", addr);
+    LOG_ERROR(HW_Memory, "Unknown virtual address @ 0x%08X, pc: 0x%08X", addr, Core::g_app_core->GetPC());
     // To help with debugging, set bit on address so that it's obviously invalid.
-    return addr | 0x80000000;
+    return addr;// | 0x80000000;
 }
 
 VAddr PhysicalToVirtualAddress(const PAddr addr) {
@@ -443,10 +443,9 @@ VAddr PhysicalToVirtualAddress(const PAddr addr) {
     } else if (addr >= IO_AREA_PADDR && addr < IO_AREA_PADDR_END) {
         return addr - IO_AREA_PADDR + IO_AREA_VADDR;
     }
-
-    LOG_ERROR(HW_Memory, "Unknown physical address @ 0x%08X", addr);
+    LOG_ERROR(HW_Memory, "Unknown physical address @ 0x%08X, pc: 0x%08X", addr, Core::g_app_core->GetPC());
     // To help with debugging, set bit on address so that it's obviously invalid.
-    return addr | 0x80000000;
+    return addr;// | 0x80000000;
 }
 
 } // namespace
