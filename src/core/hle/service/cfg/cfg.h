@@ -98,7 +98,7 @@ void GetCountryCodeString(Service::Interface* self);
 void GetCountryCodeID(Service::Interface* self);
 
 /**
- * CFG::GetConfigInfoBlk2 service function
+ * CFG::GetConfig service function
  *  Inputs:
  *      0 : 0x00010082
  *      1 : Size
@@ -108,10 +108,10 @@ void GetCountryCodeID(Service::Interface* self);
  *  Outputs:
  *      1 : Result of function, 0 on success, otherwise error code
  */
-void GetConfigInfoBlk2(Service::Interface* self);
+void GetConfig(Service::Interface* self);
 
 /**
- * CFG::SecureInfoGetRegion service function
+ * CFG::GetRegion service function
  *  Inputs:
  *      1 : None
  *  Outputs:
@@ -119,10 +119,10 @@ void GetConfigInfoBlk2(Service::Interface* self);
  *      1 : Result of function, 0 on success, otherwise error code
  *      2 : Region value loaded from SecureInfo offset 0x100
  */
-void SecureInfoGetRegion(Service::Interface* self);
+void GetRegion(Service::Interface* self);
 
 /**
- * CFG::GenHashConsoleUnique service function
+ * CFG::GetTransferableId service function
  *  Inputs:
  *      1 : 20 bit application ID salt
  *  Outputs:
@@ -131,10 +131,10 @@ void SecureInfoGetRegion(Service::Interface* self);
  *      2 : Hash/"ID" lower word
  *      3 : Hash/"ID" upper word
  */
-void GenHashConsoleUnique(Service::Interface* self);
+void GetTransferableId(Service::Interface* self);
 
 /**
- * CFG::GetRegionCanadaUSA service function
+ * CFG::IsCoppacsSupported service function
  *  Inputs:
  *      1 : None
  *  Outputs:
@@ -142,7 +142,7 @@ void GenHashConsoleUnique(Service::Interface* self);
  *      1 : Result of function, 0 on success, otherwise error code
  *      2 : 1 if the system is a Canada or USA model, 0 otherwise
  */
-void GetRegionCanadaUSA(Service::Interface* self);
+void IsCoppacsSupported(Service::Interface* self);
 
 /**
  * CFG::GetSystemModel service function
@@ -165,20 +165,7 @@ void GetSystemModel(Service::Interface* self);
 void GetModelNintendo2DS(Service::Interface* self);
 
 /**
- * CFG::GetConfigInfoBlk2 service function
- *  Inputs:
- *      0 : 0x00010082
- *      1 : Size
- *      2 : Block ID
- *      3 : Descriptor for the output buffer
- *      4 : Output buffer pointer
- *  Outputs:
- *      1 : Result of function, 0 on success, otherwise error code
- */
-void GetConfigInfoBlk2(Service::Interface* self);
-
-/**
- * CFG::GetConfigInfoBlk8 service function
+ * CFG::GetConfigForSys service function
  *  Inputs:
  *      0 : 0x04010082 / 0x08010082
  *      1 : Size
@@ -188,16 +175,16 @@ void GetConfigInfoBlk2(Service::Interface* self);
  *  Outputs:
  *      1 : Result of function, 0 on success, otherwise error code
  */
-void GetConfigInfoBlk8(Service::Interface* self);
+void GetConfigForSys(Service::Interface* self);
 
 /**
- * CFG::UpdateConfigNANDSavegame service function
+ * CFG::FlushConfigForSys service function
  *  Inputs:
  *      0 : 0x04030000 / 0x08030000
  *  Outputs:
  *      1 : Result of function, 0 on success, otherwise error code
  */
-void UpdateConfigNANDSavegame(Service::Interface* self);
+void FlushConfigForSys(Service::Interface* self);
 
 /**
  * CFG::FormatConfig service function

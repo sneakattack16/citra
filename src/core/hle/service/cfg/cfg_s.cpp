@@ -10,10 +10,10 @@ namespace CFG {
 
 const Interface::FunctionInfo FunctionTable[] = {
     // cfg common
-    {0x00010082, GetConfigInfoBlk2,                    "GetConfigInfoBlk2"},
-    {0x00020000, SecureInfoGetRegion,                  "SecureInfoGetRegion"},
-    {0x00030040, GenHashConsoleUnique,                 "GenHashConsoleUnique"},
-    {0x00040000, GetRegionCanadaUSA,                   "GetRegionCanadaUSA"},
+    {0x00010082, GetConfig,                            "GetConfig"},
+    {0x00020000, GetRegion,                            "GetRegion"},
+    {0x00030040, GetTransferableId,                    "GetTransferableId"},
+    {0x00040000, IsCoppacsSupported,                   "IsCoppacsSupported"},
     {0x00050000, GetSystemModel,                       "GetSystemModel"},
     {0x00060000, GetModelNintendo2DS,                  "GetModelNintendo2DS"},
     {0x00070040, nullptr,                              "WriteToFirstByteCfgSavegame"},
@@ -21,15 +21,17 @@ const Interface::FunctionInfo FunctionTable[] = {
     {0x00090040, GetCountryCodeString,                 "GetCountryCodeString"},
     {0x000A0040, GetCountryCodeID,                     "GetCountryCodeID"},
     // cfg:s
-    {0x04010082, GetConfigInfoBlk8,                    "GetConfigInfoBlk8"},
-    {0x04020082, nullptr,                              "SetConfigInfoBlk4"},
-    {0x04030000, UpdateConfigNANDSavegame,             "UpdateConfigNANDSavegame"},
-    {0x04040042, nullptr,                              "GetLocalFriendCodeSeedData"},
-    {0x04050000, nullptr,                              "GetLocalFriendCodeSeed"},
-    {0x04060000, nullptr,                              "SecureInfoGetRegion"},
-    {0x04070000, nullptr,                              "SecureInfoGetByte101"},
-    {0x04080042, nullptr,                              "SecureInfoGetSerialNo"},
-    {0x04090000, nullptr,                              "UpdateConfigBlk00040003"},
+    {0x04010082, GetConfigForSys,                      "GetConfigForSys"},
+    {0x04020082, nullptr,                              "SetConfigForSys"},
+    {0x04030000, FlushConfigForSys,                    "FlushConfigForSys"},
+    {0x04040042, nullptr,                              "GetLocalFriendCodeSeedCertificateForSys"},
+    {0x04050000, nullptr,                              "GetLocalFriendCodeSeedForSys"},
+    {0x04060000, GetRegion,                            "GetRegionForSys"},
+    {0x04070000, nullptr,                              "GetFlagsForSys"},
+    {0x04080042, nullptr,                              "GetSerialNoForSys"},
+    {0x04090000, nullptr,                              "ResetAccelerometerCalibrationForSys"},
+    {0x040A0000, nullptr,                              "EvacuateSaveDataForSys"},
+    {0x040B0000, nullptr,                              "DeleteEvacuatedSaveDataForSys"},
 };
 
 CFG_S_Interface::CFG_S_Interface() {

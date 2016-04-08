@@ -131,14 +131,14 @@ void GetCountryCodeID(Service::Interface* self) {
     cmd_buff[2] = country_code_id;
 }
 
-void SecureInfoGetRegion(Service::Interface* self) {
+void GetRegion(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
     cmd_buff[1] = RESULT_SUCCESS.raw;
     cmd_buff[2] = Settings::values.region_value;
 }
 
-void GenHashConsoleUnique(Service::Interface* self) {
+void GetTransferableId(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
     u32 app_id_salt = cmd_buff[1];
 
@@ -149,7 +149,7 @@ void GenHashConsoleUnique(Service::Interface* self) {
     LOG_WARNING(Service_CFG, "(STUBBED) called app_id_salt=0x%X", app_id_salt);
 }
 
-void GetRegionCanadaUSA(Service::Interface* self) {
+void IsCoppacsSupported(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
     cmd_buff[1] = RESULT_SUCCESS.raw;
@@ -187,7 +187,7 @@ void GetModelNintendo2DS(Service::Interface* self) {
         cmd_buff[2] = 1;
 }
 
-void GetConfigInfoBlk2(Service::Interface* self) {
+void GetConfig(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
     u32 size = cmd_buff[1];
     u32 block_id = cmd_buff[2];
@@ -201,7 +201,7 @@ void GetConfigInfoBlk2(Service::Interface* self) {
     cmd_buff[1] = Service::CFG::GetConfigInfoBlock(block_id, size, 0x2, data_pointer).raw;
 }
 
-void GetConfigInfoBlk8(Service::Interface* self) {
+void GetConfigForSys(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
     u32 size = cmd_buff[1];
     u32 block_id = cmd_buff[2];
@@ -215,7 +215,7 @@ void GetConfigInfoBlk8(Service::Interface* self) {
     cmd_buff[1] = Service::CFG::GetConfigInfoBlock(block_id, size, 0x8, data_pointer).raw;
 }
 
-void UpdateConfigNANDSavegame(Service::Interface* self) {
+void FlushConfigForSys(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
     cmd_buff[1] = Service::CFG::UpdateConfigNANDSavegame().raw;
 }

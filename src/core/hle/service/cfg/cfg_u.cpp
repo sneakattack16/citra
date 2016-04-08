@@ -10,10 +10,10 @@ namespace CFG {
 
 const Interface::FunctionInfo FunctionTable[] = {
     // cfg common
-    {0x00010082, GetConfigInfoBlk2,     "GetConfigInfoBlk2"},
-    {0x00020000, SecureInfoGetRegion,   "SecureInfoGetRegion"},
-    {0x00030040, GenHashConsoleUnique,  "GenHashConsoleUnique"},
-    {0x00040000, GetRegionCanadaUSA,    "GetRegionCanadaUSA"},
+    {0x00010082, GetConfig,             "GetConfig"},
+    {0x00020000, GetRegion,             "GetRegion"},
+    {0x00030040, GetTransferableId,     "GetTransferableId"},
+    {0x00040000, IsCoppacsSupported,    "IsCoppacsSupported"},
     {0x00050000, GetSystemModel,        "GetSystemModel"},
     {0x00060000, GetModelNintendo2DS,   "GetModelNintendo2DS"},
     {0x00070040, nullptr,               "WriteToFirstByteCfgSavegame"},
