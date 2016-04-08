@@ -102,7 +102,7 @@ QString WaitTreeThread::GetText() const {
         break;
     case THREADSTATUS_WAIT_ARB:
         status = tr("waiting for address 0x%1")
-            .arg(thread.wait_address,8, 16, QLatin1Char('0'));
+            .arg(thread.wait_address, 8, 16, QLatin1Char('0'));
         break;
     case THREADSTATUS_WAIT_SLEEP:
         status = tr("sleeping");
@@ -117,7 +117,10 @@ QString WaitTreeThread::GetText() const {
         status = tr("dead");
         break;
     }
-    return WaitTreeWaitObject::GetText() + " (" + status + ")";
+    QString pc_info = tr(" PC = 0x%1 LR = 0x%2")
+        .arg(thread.context.pc, 8, 16, QLatin1Char('0'))
+        .arg(thread.context.lr, 8, 16, QLatin1Char('0'));
+    return WaitTreeWaitObject::GetText() + pc_info + " (" + status + ") ";
 }
 
 std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeThread::GetChildren() const {
