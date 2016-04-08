@@ -17,6 +17,7 @@ set(SRCS
             debugger/profiler.cpp
             debugger/ramview.cpp
             debugger/registers.cpp
+            debugger/wait_tree.cpp
             game_list.cpp
             util/spinbox.cpp
             util/util.cpp
@@ -44,6 +45,7 @@ set(HEADERS
             debugger/profiler.h
             debugger/ramview.h
             debugger/registers.h
+            debugger/wait_tree.h
             game_list.h
             util/spinbox.h
             util/util.h
