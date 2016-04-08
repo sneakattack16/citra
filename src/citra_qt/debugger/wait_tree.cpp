@@ -8,23 +8,23 @@
 
 #include "core/core.h"
 
-bool WaitTreeItem::IsExpandable() const {
-    return false;
-}
 WaitTreeItem::~WaitTreeItem() {
 }
 
+bool WaitTreeItem::IsExpandable() const {
+    return false;
+}
 
-WaitTreeText::WaitTreeText(const QString& text) :
-    text(text){
+WaitTreeText::WaitTreeText(const QString& t) :
+    text(t) {
 }
 
 QString WaitTreeText::GetText() const {
     return text;
 }
 
-WaitTreeWaitObject::WaitTreeWaitObject(const Kernel::WaitObject& object) :
-    object(object) {
+WaitTreeWaitObject::WaitTreeWaitObject(const Kernel::WaitObject& o) :
+    object(o) {
 }
 
 bool WaitTreeExpandableItem::IsExpandable() const {
@@ -40,15 +40,15 @@ QString WaitTreeWaitObject::GetText() const {
 std::unique_ptr<WaitTreeWaitObject> WaitTreeWaitObject::make(const Kernel::WaitObject& object) {
     switch (object.GetHandleType()) {
     case Kernel::HandleType::Event:
-        return std::make_unique<WaitTreeEvent>(reinterpret_cast<const Kernel::Event&>(object));
+        return std::make_unique<WaitTreeEvent>(static_cast<const Kernel::Event&>(object));
     case Kernel::HandleType::Mutex:
-        return std::make_unique<WaitTreeMutex>(reinterpret_cast<const Kernel::Mutex&>(object));
+        return std::make_unique<WaitTreeMutex>(static_cast<const Kernel::Mutex&>(object));
     case Kernel::HandleType::Semaphore:
-        return std::make_unique<WaitTreeSemaphore>(reinterpret_cast<const Kernel::Semaphore&>(object));
+        return std::make_unique<WaitTreeSemaphore>(static_cast<const Kernel::Semaphore&>(object));
     case Kernel::HandleType::Timer:
-        return std::make_unique<WaitTreeTimer>(reinterpret_cast<const Kernel::Timer&>(object));
+        return std::make_unique<WaitTreeTimer>(static_cast<const Kernel::Timer&>(object));
     case Kernel::HandleType::Thread:
-        return std::make_unique<WaitTreeThread>(reinterpret_cast<const Kernel::Thread&>(object));
+        return std::make_unique<WaitTreeThread>(static_cast<const Kernel::Thread&>(object));
     default:
         return std::make_unique<WaitTreeWaitObject>(object);
     }
@@ -66,8 +66,8 @@ std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeWaitObject::GetChildren() con
     return list;
 }
 
-WaitTreeObjectList::WaitTreeObjectList(const std::vector<Kernel::SharedPtr<Kernel::WaitObject>>& list, bool wait_all) :
-    object_list(list), wait_all(wait_all) {
+WaitTreeObjectList::WaitTreeObjectList(const std::vector<Kernel::SharedPtr<Kernel::WaitObject>>& list, bool w_all) :
+    object_list(list), wait_all(w_all) {
 }
 
 QString WaitTreeObjectList::GetText() const {
@@ -91,7 +91,7 @@ WaitTreeThread::WaitTreeThread(const Kernel::Thread& thread) :
 }
 
 QString WaitTreeThread::GetText() const {
-    const auto& thread = reinterpret_cast<const Kernel::Thread&>(object);
+    const auto& thread = static_cast<const Kernel::Thread&>(object);
     QString status;
     switch (thread.status) {
     case THREADSTATUS_RUNNING:
@@ -125,7 +125,7 @@ QString WaitTreeThread::GetText() const {
 
 std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeThread::GetChildren() const {
     std::vector<std::unique_ptr<WaitTreeItem>> list(WaitTreeWaitObject::GetChildren());
-    const auto& thread = reinterpret_cast<const Kernel::Thread&>(object);
+    const auto& thread = static_cast<const Kernel::Thread&>(object);
     list.push_back(std::make_unique<WaitTreeText>(tr("thread id = %1")
         .arg(thread.GetThreadId())));
     list.push_back(std::make_unique<WaitTreeText>(tr("priority = %1(current) / %2(normal)")
@@ -153,7 +153,7 @@ std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeEvent::GetChildren() const {
     std::vector<std::unique_ptr<WaitTreeItem>> list(WaitTreeWaitObject::GetChildren());
 
     QString reset_type;
-    switch (reinterpret_cast<const Kernel::Event&>(object).reset_type) {
+    switch (static_cast<const Kernel::Event&>(object).reset_type) {
     case Kernel::ResetType::OneShot:
         reset_type = tr("one shot");
         break;
@@ -176,7 +176,7 @@ WaitTreeMutex::WaitTreeMutex(const Kernel::Mutex& object) :
 std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeMutex::GetChildren() const {
     std::vector<std::unique_ptr<WaitTreeItem>> list(WaitTreeWaitObject::GetChildren());
 
-    const auto& mutex = reinterpret_cast<const Kernel::Mutex&>(object);
+    const auto& mutex = static_cast<const Kernel::Mutex&>(object);
     if (mutex.lock_count) {
         list.push_back(std::make_unique<WaitTreeText>(tr("locked %1 times by thread:")
             .arg(mutex.lock_count)));
@@ -194,7 +194,7 @@ WaitTreeSemaphore::WaitTreeSemaphore(const Kernel::Semaphore& object) :
 std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeSemaphore::GetChildren() const {
     std::vector<std::unique_ptr<WaitTreeItem>> list(WaitTreeWaitObject::GetChildren());
 
-    const auto& semaphore = reinterpret_cast<const Kernel::Semaphore&>(object);
+    const auto& semaphore = static_cast<const Kernel::Semaphore&>(object);
     list.push_back(std::make_unique<WaitTreeText>(tr("available count = %1")
         .arg(semaphore.available_count)));
     list.push_back(std::make_unique<WaitTreeText>(tr("max count = %1")
@@ -209,7 +209,7 @@ WaitTreeTimer::WaitTreeTimer(const Kernel::Timer& object) :
 std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeTimer::GetChildren() const{
     std::vector<std::unique_ptr<WaitTreeItem>> list(WaitTreeWaitObject::GetChildren());
 
-    const auto& timer = reinterpret_cast<const Kernel::Timer&>(object);
+    const auto& timer = static_cast<const Kernel::Timer&>(object);
     list.push_back(std::make_unique<WaitTreeText>(tr("initial delay = %1")
         .arg(timer.initial_delay)));
     list.push_back(std::make_unique<WaitTreeText>(tr("interval_delay = %1")
@@ -276,7 +276,7 @@ void WaitTree::ToggleExpand(size_t index) {
         });
         list.erase(child_begin, child_end);
     } else {
-        auto child = AssignLevel(reinterpret_cast<WaitTreeExpandableItem&>(*list[index].first).GetChildren(),
+        auto child = AssignLevel(static_cast<WaitTreeExpandableItem&>(*list[index].first).GetChildren(),
             list[index].second + 1);
         list.insert(list.begin() + index + 1,
             std::make_move_iterator(child.begin()),
