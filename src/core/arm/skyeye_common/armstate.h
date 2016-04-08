@@ -190,6 +190,9 @@ public:
     // two bytes in size. Thus we don't need to worry about ThumbEE
     // or Thumb-2 where instructions can be 4 bytes in length.
     u32 GetInstructionSize() const {
+        //if(Reg[15] > 0x20362c) {
+        //    return TFlag ? 2 : 4;
+        //}
         return TFlag ? 2 : 4;
     }
 

@@ -3570,29 +3570,29 @@ unsigned InterpreterMainLoop(ARMul_State* cpu) {
 
     GDBStub::BreakpointAddress breakpoint_data;
 
-    #undef RM
-    #undef RS
+#undef RM
+#undef RS
 
-    #define CRn             inst_cream->crn
-    #define OPCODE_1        inst_cream->opcode_1
-    #define OPCODE_2        inst_cream->opcode_2
-    #define CRm             inst_cream->crm
-    #define RD              cpu->Reg[inst_cream->Rd]
-    #define RD2             cpu->Reg[inst_cream->Rd + 1]
-    #define RN              cpu->Reg[inst_cream->Rn]
-    #define RM              cpu->Reg[inst_cream->Rm]
-    #define RS              cpu->Reg[inst_cream->Rs]
-    #define RDHI            cpu->Reg[inst_cream->RdHi]
-    #define RDLO            cpu->Reg[inst_cream->RdLo]
-    #define LINK_RTN_ADDR   (cpu->Reg[14] = cpu->Reg[15] + 4)
-    #define SET_PC          (cpu->Reg[15] = cpu->Reg[15] + 8 + inst_cream->signed_immed_24)
-    #define SHIFTER_OPERAND inst_cream->shtop_func(cpu, inst_cream->shifter_operand)
+#define CRn             inst_cream->crn
+#define OPCODE_1        inst_cream->opcode_1
+#define OPCODE_2        inst_cream->opcode_2
+#define CRm             inst_cream->crm
+#define RD              cpu->Reg[inst_cream->Rd]
+#define RD2             cpu->Reg[inst_cream->Rd + 1]
+#define RN              cpu->Reg[inst_cream->Rn]
+#define RM              cpu->Reg[inst_cream->Rm]
+#define RS              cpu->Reg[inst_cream->Rs]
+#define RDHI            cpu->Reg[inst_cream->RdHi]
+#define RDLO            cpu->Reg[inst_cream->RdLo]
+#define LINK_RTN_ADDR   (cpu->Reg[14] = cpu->Reg[15] + 4)
+#define SET_PC          (cpu->Reg[15] = cpu->Reg[15] + 8 + inst_cream->signed_immed_24)
+#define SHIFTER_OPERAND inst_cream->shtop_func(cpu, inst_cream->shifter_operand)
 
-    #define FETCH_INST if (inst_base->br != NON_BRANCH) goto DISPATCH; \
+#define FETCH_INST if (inst_base->br != NON_BRANCH) goto DISPATCH; \
                        inst_base = (arm_inst *)&inst_buf[ptr]
 
-    #define INC_PC(l)   ptr += sizeof(arm_inst) + l
-    #define INC_PC_STUB ptr += sizeof(arm_inst)
+#define INC_PC(l)   ptr += sizeof(arm_inst) + l
+#define INC_PC_STUB ptr += sizeof(arm_inst)
 
 #define GDB_BP_CHECK \
     cpu->Cpsr &= ~(1 << 5); \
@@ -3604,8 +3604,8 @@ unsigned InterpreterMainLoop(ARMul_State* cpu) {
         } \
     }
 
-// GCC and Clang have a C++ extension to support a lookup table of labels. Otherwise, fallback to a
-// clunky switch statement.
+    // GCC and Clang have a C++ extension to support a lookup table of labels. Otherwise, fallback to a
+    // clunky switch statement.
 #if defined __GNUC__ || defined __clang__
 #define GOTO_NEXT_INST \
     GDB_BP_CHECK; \
@@ -3894,6 +3894,9 @@ unsigned InterpreterMainLoop(ARMul_State* cpu) {
             cpu->Reg[15] &= 0xfffffffe;
         else
             cpu->Reg[15] &= 0xfffffffc;
+
+        //if(cpu->Reg[15]>0x100048)
+        //    LOG_TRACE(Core_ARM11, "exec PC 0x%08X ", cpu->Reg[15]);
 
         // Find the cached instruction cream, otherwise translate it...
         auto itr = cpu->instruction_cache.find(cpu->Reg[15]);
@@ -4584,6 +4587,7 @@ unsigned InterpreterMainLoop(ARMul_State* cpu) {
     }
     LDRSB_INST:
     {
+        LOG_TRACE(Core_ARM11, "PC 0x%08X ", cpu->Reg[15]);
         if (inst_base->cond == ConditionCode::AL || CondPassed(cpu, inst_base->cond)) {
             ldst_inst* inst_cream = (ldst_inst*)inst_base->component;
             inst_cream->get_addr(cpu, inst_cream->inst, addr);
