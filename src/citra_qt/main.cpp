@@ -35,6 +35,7 @@
 #include "citra_qt/debugger/profiler.h"
 #include "citra_qt/debugger/ramview.h"
 #include "citra_qt/debugger/registers.h"
+#include "citra_qt/debugger/wait_tree.h"
 
 #include "common/microprofile.h"
 #include "common/platform.h"
@@ -113,6 +114,10 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr)
     addDockWidget(Qt::RightDockWidgetArea, graphicsTracingWidget);
     graphicsTracingWidget->hide();
 
+    waitTreeWidget = new WaitTreeWidget(this);
+    addDockWidget(Qt::LeftDockWidgetArea, waitTreeWidget);
+    waitTreeWidget->hide();
+
     QMenu* debug_menu = ui.menu_View->addMenu(tr("Debugging"));
     debug_menu->addAction(profilerWidget->toggleViewAction());
 #if MICROPROFILE_ENABLED
@@ -127,6 +132,7 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr)
     debug_menu->addAction(graphicsFramebufferWidget->toggleViewAction());
     debug_menu->addAction(graphicsVertexShaderWidget->toggleViewAction());
     debug_menu->addAction(graphicsTracingWidget->toggleViewAction());
+    debug_menu->addAction(waitTreeWidget->toggleViewAction());
 
     // Set default UI state
     // geometry: 55% of the window contents are in the upper screen half, 45% in the lower half
@@ -185,7 +191,8 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr)
     connect(this, SIGNAL(EmulationStopping()), render_window, SLOT(OnEmulationStopping()));
     connect(this, SIGNAL(EmulationStarting(EmuThread*)), graphicsTracingWidget, SLOT(OnEmulationStarting(EmuThread*)));
     connect(this, SIGNAL(EmulationStopping()), graphicsTracingWidget, SLOT(OnEmulationStopping()));
-
+    connect(this, SIGNAL(EmulationStarting(EmuThread*)), waitTreeWidget, SLOT(OnEmulationStarting(EmuThread*)));
+    connect(this, SIGNAL(EmulationStopping()), waitTreeWidget, SLOT(OnEmulationStopping()));
 
     // Setup hotkeys
     RegisterHotkey("Main Window", "Load File", QKeySequence::Open);
@@ -326,9 +333,11 @@ void GMainWindow::BootGame(const std::string& filename) {
     connect(emu_thread.get(), SIGNAL(DebugModeEntered()), disasmWidget, SLOT(OnDebugModeEntered()), Qt::BlockingQueuedConnection);
     connect(emu_thread.get(), SIGNAL(DebugModeEntered()), registersWidget, SLOT(OnDebugModeEntered()), Qt::BlockingQueuedConnection);
     connect(emu_thread.get(), SIGNAL(DebugModeEntered()), callstackWidget, SLOT(OnDebugModeEntered()), Qt::BlockingQueuedConnection);
+    connect(emu_thread.get(), SIGNAL(DebugModeEntered()), waitTreeWidget, SLOT(OnDebugModeEntered()), Qt::BlockingQueuedConnection);
     connect(emu_thread.get(), SIGNAL(DebugModeLeft()), disasmWidget, SLOT(OnDebugModeLeft()), Qt::BlockingQueuedConnection);
     connect(emu_thread.get(), SIGNAL(DebugModeLeft()), registersWidget, SLOT(OnDebugModeLeft()), Qt::BlockingQueuedConnection);
     connect(emu_thread.get(), SIGNAL(DebugModeLeft()), callstackWidget, SLOT(OnDebugModeLeft()), Qt::BlockingQueuedConnection);
+    connect(emu_thread.get(), SIGNAL(DebugModeLeft()), waitTreeWidget, SLOT(OnDebugModeLeft()), Qt::BlockingQueuedConnection);
 
     // Update the GUI
     registersWidget->OnDebugModeEntered();

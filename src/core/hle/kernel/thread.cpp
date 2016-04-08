@@ -584,4 +584,8 @@ void ThreadingShutdown() {
     ready_queue.clear();
 }
 
+const std::vector<SharedPtr<Thread>>& GetThreadList() {
+    return thread_list;
+}
+
 } // namespace
