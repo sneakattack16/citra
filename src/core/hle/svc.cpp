@@ -1045,7 +1045,7 @@ Common::Profiling::TimingCategory profiler_svc("SVC Calls");
 
 static const FunctionDef* GetSVCInfo(u32 func_num) {
     if (func_num >= ARRAY_SIZE(SVC_Table)) {
-        LOG_ERROR(Kernel_SVC, "unknown svc=0x%02X", func_num);
+        LOG_ERROR(Kernel_SVC, "unknown svc=0x%02X, pc = 0x%08X", func_num, Core::g_app_core->GetReg(15));
         return nullptr;
     }
     return &SVC_Table[func_num];
