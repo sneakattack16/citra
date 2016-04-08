@@ -15,7 +15,7 @@
 
 class EmuThread;
 
-class WaitTreeItem : public QObject{
+class WaitTreeItem : public QObject {
     Q_OBJECT
 public:
     virtual bool IsExpandable() const;
