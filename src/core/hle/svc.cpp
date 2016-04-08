@@ -471,7 +471,7 @@ static ResultCode CreateThread(Handle* out_handle, s32 priority, u32 entry_point
         TSymbol symbol = Symbols::GetSymbol(entry_point);
         name = symbol.name;
     } else {
-        name = Common::StringFromFormat("unknown-%08x", entry_point);
+        name = Common::StringFromFormat("thread-%08x", Memory::Read32(arg+8));
     }
 
     // TODO(bunnei): Implement resource limits to return an error code instead of the below assert.
