@@ -22,126 +22,115 @@ public:
     virtual QString GetText() const = 0;
     virtual ~WaitTreeItem();
 };
+
 class WaitTreeText : public WaitTreeItem {
     Q_OBJECT
-private:
-    QString text;
 public:
     WaitTreeText(const QString& text);
-    virtual QString GetText() const override;
+    QString GetText() const override;
+private:
+    QString text;
 };
+
 class WaitTreeExpandableItem : public WaitTreeItem {
     Q_OBJECT
 public:
-    virtual bool IsExpandable() const override;
+    bool IsExpandable() const override;
     virtual std::vector<std::unique_ptr<WaitTreeItem>> GetChildren() const = 0;
 };
+
 class WaitTreeWaitObject : public WaitTreeExpandableItem {
     Q_OBJECT
-protected:
-    const Kernel::WaitObject& object;
 public:
     WaitTreeWaitObject(const Kernel::WaitObject& object);
     static std::unique_ptr<WaitTreeWaitObject> make(const Kernel::WaitObject& object);
-    virtual QString GetText() const override;
-    virtual std::vector<std::unique_ptr<WaitTreeItem>> GetChildren() const override;
+    QString GetText() const override;
+    std::vector<std::unique_ptr<WaitTreeItem>> GetChildren() const override;
+protected:
+    const Kernel::WaitObject& object;
 };
 
 class WaitTreeObjectList : public WaitTreeExpandableItem {
     Q_OBJECT
+public:
+    WaitTreeObjectList(const std::vector<Kernel::SharedPtr<Kernel::WaitObject>>& list, bool wait_all);
+    QString GetText() const override;
+    std::vector<std::unique_ptr<WaitTreeItem>> GetChildren() const override;
 private:
     const std::vector<Kernel::SharedPtr<Kernel::WaitObject>>& object_list;
     bool wait_all;
-public:
-    WaitTreeObjectList(const std::vector<Kernel::SharedPtr<Kernel::WaitObject>>& list, bool wait_all);
-    virtual QString GetText() const override;
-    virtual std::vector<std::unique_ptr<WaitTreeItem>> GetChildren() const override;
 };
+
 class WaitTreeThread : public WaitTreeWaitObject {
     Q_OBJECT
 public:
     WaitTreeThread(const Kernel::Thread& thread);
-    virtual QString GetText() const override;
-    virtual std::vector<std::unique_ptr<WaitTreeItem>> GetChildren() const override;
+    QString GetText() const override;
+    std::vector<std::unique_ptr<WaitTreeItem>> GetChildren() const override;
 };
+
 class WaitTreeEvent : public WaitTreeWaitObject {
     Q_OBJECT
 public:
     WaitTreeEvent(const Kernel::Event& object);
-    virtual std::vector<std::unique_ptr<WaitTreeItem>> GetChildren() const override;
+    std::vector<std::unique_ptr<WaitTreeItem>> GetChildren() const override;
 };
+
 class WaitTreeMutex : public WaitTreeWaitObject {
     Q_OBJECT
 public:
     WaitTreeMutex(const Kernel::Mutex& object);
-    virtual std::vector<std::unique_ptr<WaitTreeItem>> GetChildren() const override;
+    std::vector<std::unique_ptr<WaitTreeItem>> GetChildren() const override;
 };
+
 class WaitTreeSemaphore : public WaitTreeWaitObject {
     Q_OBJECT
 public:
     WaitTreeSemaphore(const Kernel::Semaphore& object);
-    virtual std::vector<std::unique_ptr<WaitTreeItem>> GetChildren() const override;
+    std::vector<std::unique_ptr<WaitTreeItem>> GetChildren() const override;
 };
 
 class WaitTreeTimer : public WaitTreeWaitObject {
     Q_OBJECT
 public:
     WaitTreeTimer(const Kernel::Timer& object);
-
-    virtual std::vector<std::unique_ptr<WaitTreeItem>> GetChildren() const override;
+    std::vector<std::unique_ptr<WaitTreeItem>> GetChildren() const override;
 };
 
 class WaitTreeMutexList : public WaitTreeExpandableItem {
     Q_OBJECT
-private:
-    const boost::container::flat_set<Kernel::SharedPtr<Kernel::Mutex>>& mutex_list;
 public:
     WaitTreeMutexList(const boost::container::flat_set<Kernel::SharedPtr<Kernel::Mutex>>& list);
-    virtual QString GetText() const override;
-    virtual std::vector<std::unique_ptr<WaitTreeItem>> GetChildren() const override;
+    QString GetText() const override;
+    std::vector<std::unique_ptr<WaitTreeItem>> GetChildren() const override;
+private:
+    const boost::container::flat_set<Kernel::SharedPtr<Kernel::Mutex>>& mutex_list;
 };
 
 class WaitTreeThreadList : public WaitTreeExpandableItem {
     Q_OBJECT
-private:
-    const std::vector<Kernel::SharedPtr<Kernel::Thread>>& thread_list;
 public:
     WaitTreeThreadList(const std::vector<Kernel::SharedPtr<Kernel::Thread>>& list);
-    virtual QString GetText() const override;
-    virtual std::vector<std::unique_ptr<WaitTreeItem>> GetChildren() const override;
+    QString GetText() const override;
+    std::vector<std::unique_ptr<WaitTreeItem>> GetChildren() const override;
+private:
+    const std::vector<Kernel::SharedPtr<Kernel::Thread>>& thread_list;
 };
-
-
 
 class WaitTree : public QObject {
     Q_OBJECT
-private:
-    std::vector<std::pair<std::unique_ptr<WaitTreeItem>, int>> list;
-
 public:
     void Init(std::vector<std::unique_ptr<WaitTreeItem>>&& root_list);
-    void Clear() {
-        list.clear();
-    }
+    void Clear();
     void ToggleExpand(size_t index);
-    bool IsExpandable(size_t index) const {
-        return list[index].first->IsExpandable();
-    }
-    bool IsExpanded(size_t index) const {
-        return index != list.size() - 1
-            && list[index].second<list[index + 1].second;
-    }
-    size_t Size() const {
-        return list.size();
-    }
-    QString GetText(size_t index) const {
-        return list[index].first->GetText();
-    }
-    int GetLevel(size_t index) const {
-        return list[index].second;
-    }
+    bool IsExpandable(size_t index) const;
+    bool IsExpanded(size_t index) const;
+    size_t Size() const;
+    QString GetText(size_t index) const;
+    int GetLevel(size_t index) const;
+private:
+    std::vector<std::pair<std::unique_ptr<WaitTreeItem>, int>> list;
 };
-
 
 class WaitTreeModel : public QAbstractListModel
 {

@@ -3,39 +3,40 @@
 // Refer to the license.txt file included.
 
 
-#include "core/core.h"
-
 #include "citra_qt/util/util.h"
 #include "citra_qt/debugger/wait_tree.h"
+
+#include "core/core.h"
 
 bool WaitTreeItem::IsExpandable() const {
     return false;
 }
 WaitTreeItem::~WaitTreeItem() {
-
 }
 
 
-WaitTreeText::WaitTreeText(const QString& text)
-    : text(text){
+WaitTreeText::WaitTreeText(const QString& text) :
+    text(text){
 }
+
 QString WaitTreeText::GetText() const {
     return text;
+}
+
+WaitTreeWaitObject::WaitTreeWaitObject(const Kernel::WaitObject& object) :
+    object(object) {
 }
 
 bool WaitTreeExpandableItem::IsExpandable() const {
     return true;
 }
 
-
-WaitTreeWaitObject::WaitTreeWaitObject(const Kernel::WaitObject& object)
-    : object(object) {
-}
 QString WaitTreeWaitObject::GetText() const {
     return tr("[%1]%2 %3").arg(object.GetObjectId())
         .arg(QString::fromStdString(object.GetTypeName()),
             QString::fromStdString(object.GetName()));
 }
+
 std::unique_ptr<WaitTreeWaitObject> WaitTreeWaitObject::make(const Kernel::WaitObject& object) {
     switch (object.GetHandleType()) {
     case Kernel::HandleType::Event:
@@ -52,10 +53,11 @@ std::unique_ptr<WaitTreeWaitObject> WaitTreeWaitObject::make(const Kernel::WaitO
         return std::make_unique<WaitTreeWaitObject>(object);
     }
 }
+
 std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeWaitObject::GetChildren() const {
     std::vector<std::unique_ptr<WaitTreeItem>> list;
 
-    const auto& threads=object.GetWaitingThreads();
+    const auto& threads = object.GetWaitingThreads();
     if (threads.empty()) {
         list.push_back(std::make_unique<WaitTreeText>(tr("waited by no thread")));
     } else {
@@ -64,9 +66,10 @@ std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeWaitObject::GetChildren() con
     return list;
 }
 
-WaitTreeObjectList::WaitTreeObjectList(const std::vector<Kernel::SharedPtr<Kernel::WaitObject>>& list, bool wait_all)
-    : object_list(list), wait_all(wait_all) {
+WaitTreeObjectList::WaitTreeObjectList(const std::vector<Kernel::SharedPtr<Kernel::WaitObject>>& list, bool wait_all) :
+    object_list(list), wait_all(wait_all) {
 }
+
 QString WaitTreeObjectList::GetText() const {
     if (wait_all) {
         return tr("waiting for all of objects");
@@ -74,17 +77,19 @@ QString WaitTreeObjectList::GetText() const {
         return tr("waiting for one of objects");
     }
 }
+
 std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeObjectList::GetChildren() const {
     std::vector<std::unique_ptr<WaitTreeItem>> list(object_list.size());
-    std::transform(object_list.begin(), object_list.end(), list.begin(),
-        [](const auto& t){return WaitTreeWaitObject::make(*t); }
-    );
+    std::transform(object_list.begin(), object_list.end(), list.begin(), [](const auto& t){
+        return WaitTreeWaitObject::make(*t);
+    });
     return list;
 }
 
-WaitTreeThread::WaitTreeThread(const Kernel::Thread& thread)
-    : WaitTreeWaitObject(thread) {
+WaitTreeThread::WaitTreeThread(const Kernel::Thread& thread) :
+    WaitTreeWaitObject(thread) {
 }
+
 QString WaitTreeThread::GetText() const {
     const auto& thread = reinterpret_cast<const Kernel::Thread&>(object);
     QString status;
@@ -114,6 +119,7 @@ QString WaitTreeThread::GetText() const {
     }
     return WaitTreeWaitObject::GetText() + " (" + status + ")";
 }
+
 std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeThread::GetChildren() const {
     std::vector<std::unique_ptr<WaitTreeItem>> list(WaitTreeWaitObject::GetChildren());
     const auto& thread = reinterpret_cast<const Kernel::Thread&>(object);
@@ -136,9 +142,10 @@ std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeThread::GetChildren() const {
     return list;
 }
 
-WaitTreeEvent::WaitTreeEvent(const Kernel::Event& object)
-    : WaitTreeWaitObject(object) {
+WaitTreeEvent::WaitTreeEvent(const Kernel::Event& object) :
+    WaitTreeWaitObject(object) {
 }
+
 std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeEvent::GetChildren() const {
     std::vector<std::unique_ptr<WaitTreeItem>> list(WaitTreeWaitObject::GetChildren());
 
@@ -158,10 +165,11 @@ std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeEvent::GetChildren() const {
     return list;
 }
 
-WaitTreeMutex::WaitTreeMutex(const Kernel::Mutex& object)
-    : WaitTreeWaitObject(object) {
+WaitTreeMutex::WaitTreeMutex(const Kernel::Mutex& object) :
+    WaitTreeWaitObject(object) {
 
 }
+
 std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeMutex::GetChildren() const {
     std::vector<std::unique_ptr<WaitTreeItem>> list(WaitTreeWaitObject::GetChildren());
 
@@ -170,16 +178,16 @@ std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeMutex::GetChildren() const {
         list.push_back(std::make_unique<WaitTreeText>(tr("locked %1 times by thread:")
             .arg(mutex.lock_count)));
         list.push_back(std::make_unique<WaitTreeThread>(*mutex.holding_thread));
-    }
-    else {
+    } else {
         list.push_back(std::make_unique<WaitTreeText>(tr("free")));
     }
     return list;
 }
 
-WaitTreeSemaphore::WaitTreeSemaphore(const Kernel::Semaphore& object)
-    : WaitTreeWaitObject(object) {
+WaitTreeSemaphore::WaitTreeSemaphore(const Kernel::Semaphore& object) :
+    WaitTreeWaitObject(object) {
 }
+
 std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeSemaphore::GetChildren() const {
     std::vector<std::unique_ptr<WaitTreeItem>> list(WaitTreeWaitObject::GetChildren());
 
@@ -191,9 +199,10 @@ std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeSemaphore::GetChildren() cons
     return list;
 }
 
-WaitTreeTimer::WaitTreeTimer(const Kernel::Timer& object)
-    : WaitTreeWaitObject(object){
+WaitTreeTimer::WaitTreeTimer(const Kernel::Timer& object) :
+    WaitTreeWaitObject(object){
 }
+
 std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeTimer::GetChildren() const{
     std::vector<std::unique_ptr<WaitTreeItem>> list(WaitTreeWaitObject::GetChildren());
 
@@ -205,35 +214,37 @@ std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeTimer::GetChildren() const{
     return list;
 }
 
-WaitTreeMutexList::WaitTreeMutexList(const boost::container::flat_set<Kernel::SharedPtr<Kernel::Mutex>>& list)
-    : mutex_list(list) {
+WaitTreeMutexList::WaitTreeMutexList(const boost::container::flat_set<Kernel::SharedPtr<Kernel::Mutex>>& list) :
+    mutex_list(list) {
 }
+
 QString WaitTreeMutexList::GetText() const {
     return tr("holding mutexes");
 }
+
 std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeMutexList::GetChildren() const {
     std::vector<std::unique_ptr<WaitTreeItem>> list(mutex_list.size());
-    std::transform(mutex_list.begin(), mutex_list.end(), list.begin(),
-        [](const auto& t){return std::make_unique<WaitTreeMutex>(*t); });
+    std::transform(mutex_list.begin(), mutex_list.end(), list.begin(), [](const auto& t){
+        return std::make_unique<WaitTreeMutex>(*t);
+    });
     return list;
 }
 
-WaitTreeThreadList::WaitTreeThreadList(const std::vector<Kernel::SharedPtr<Kernel::Thread>>& list)
-    : thread_list(list) {
+WaitTreeThreadList::WaitTreeThreadList(const std::vector<Kernel::SharedPtr<Kernel::Thread>>& list) :
+    thread_list(list) {
 }
+
 QString WaitTreeThreadList::GetText() const {
     return tr("waited by thread");
 }
+
 std::vector<std::unique_ptr<WaitTreeItem>> WaitTreeThreadList::GetChildren() const  {
     std::vector<std::unique_ptr<WaitTreeItem>> list(thread_list.size());
-    std::transform(thread_list.begin(), thread_list.end(), list.begin(),
-        [](const auto& t){return std::make_unique<WaitTreeThread>(*t); });
+    std::transform(thread_list.begin(), thread_list.end(), list.begin(), [](const auto& t){
+        return std::make_unique<WaitTreeThread>(*t);
+    });
     return list;
 }
-
-
-
-
 
 template<typename T>
 std::vector<std::pair<T, int>> AssignLevel(std::vector<T>&& list, int level) {
@@ -248,16 +259,20 @@ void WaitTree::Init(std::vector<std::unique_ptr<WaitTreeItem>>&& root_list) {
     list = AssignLevel(std::move(root_list), 0);
 }
 
+void WaitTree::Clear() {
+    list.clear();
+}
+
 void WaitTree::ToggleExpand(size_t index) {
     if (!list[index].first->IsExpandable()) return;
     if (IsExpanded(index)) {
         int level = list[index].second;
         auto child_begin = list.begin() + index + 1;
-        auto child_end = std::find_if_not(child_begin, list.end(),
-            [level](const auto& item){return item.second>level; });
+        auto child_end = std::find_if_not(child_begin, list.end(), [level](const auto& item){
+            return item.second > level;
+        });
         list.erase(child_begin, child_end);
-    }
-    else{
+    } else {
         auto child = AssignLevel(reinterpret_cast<WaitTreeExpandableItem&>(*list[index].first).GetChildren(),
             list[index].second + 1);
         list.insert(list.begin() + index + 1,
@@ -268,17 +283,40 @@ void WaitTree::ToggleExpand(size_t index) {
 
 }
 
+bool WaitTree::IsExpandable(size_t index) const {
+    return list[index].first->IsExpandable();
+}
 
-WaitTreeModel::WaitTreeModel(QObject* parent)
-    : QAbstractListModel(parent){
+bool WaitTree::IsExpanded(size_t index) const {
+    return index != list.size() - 1
+        && list[index].second<list[index + 1].second;
+}
+
+size_t WaitTree::Size() const {
+    return list.size();
+}
+
+QString WaitTree::GetText(size_t index) const {
+    return list[index].first->GetText();
+}
+
+int WaitTree::GetLevel(size_t index) const {
+    return list[index].second;
+}
+
+WaitTreeModel::WaitTreeModel(QObject* parent) :
+    QAbstractListModel(parent){
 
 }
+
 int WaitTreeModel::columnCount(const QModelIndex& parent) const {
     return 1;
 }
+
 int WaitTreeModel::rowCount(const QModelIndex& parent) const {
     return (int)wait_tree.Size();
 }
+
 QVariant WaitTreeModel::data(const QModelIndex& index, int role) const {
     switch (role) {
     case Qt::DisplayRole:
@@ -300,12 +338,14 @@ void WaitTreeModel::ClearItems() {
     wait_tree.Clear();
     emit layoutChanged();
 }
+
 void WaitTreeModel::InitItems() {
     const auto& threads(Kernel::GetThreadList());
 
     std::vector<std::unique_ptr<WaitTreeItem>> list(threads.size());
-    std::transform(threads.begin(), threads.end(), list.begin(),
-        [](const auto& t){return std::make_unique<WaitTreeThread>(*t); });
+    std::transform(threads.begin(), threads.end(), list.begin(), [](const auto& t){
+        return std::make_unique<WaitTreeThread>(*t);
+    });
     wait_tree.Init(std::move(list));
     emit layoutChanged();
 }
@@ -315,8 +355,8 @@ void WaitTreeModel::OnToggleExpandItem(const QModelIndex& index) {
     emit layoutChanged();
 }
 
-WaitTreeWidget::WaitTreeWidget(QWidget* parent)
-    : QDockWidget(tr("Wait Tree"), parent) {
+WaitTreeWidget::WaitTreeWidget(QWidget* parent) :
+    QDockWidget(tr("Wait Tree"), parent) {
     setObjectName("WaitTreeWidget");
     view = new QListView();
     setWidget(view);
