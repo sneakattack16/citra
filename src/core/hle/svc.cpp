@@ -285,7 +285,7 @@ static ResultCode WaitSynchronizationN(s32* out, Handle* handles, s32 handle_cou
     // NOTE: on real hardware, there is no nullptr check for 'out' (tested with firmware 4.4). If
     // this happens, the running application will crash.
     ASSERT_MSG(out != nullptr, "invalid output pointer specified!");
-
+    /*
     std::ostringstream hndl_names;
     for (s32 i = 0; i < handle_count; ++i) {
         auto obj = Kernel::g_handle_table.GetWaitObject(handles[i]);
@@ -293,7 +293,7 @@ static ResultCode WaitSynchronizationN(s32* out, Handle* handles, s32 handle_cou
 
     }
     LOG_DEBUG(Kernel_SVC, "called thrd_id=%d, handles=%s nanoseconds=%lld", Kernel::GetCurrentThread()->GetObjectId(), hndl_names.str().c_str(), nano_seconds);
-
+    */
     // Check if 'handle_count' is invalid
     if (handle_count < 0)
         return ResultCode(ErrorDescription::OutOfRange, ErrorModule::OS, ErrorSummary::InvalidArgument, ErrorLevel::Usage);
