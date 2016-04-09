@@ -43,6 +43,23 @@ static void IsConnected(Service::Interface* self) {
     LOG_WARNING(Service_AC, "(STUBBED) called");
 }
 
+/**
+ * AC_U::SetClientVersion service function
+ *  Inputs:
+ *      1 : Version
+ *  Outputs:
+ *      1 : Result of function, 0 on success, otherwise error code
+ */
+static void SetClientVersion(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    self->SetVersion(cmd_buff[1]);
+
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+
+    LOG_WARNING(Service_AC, "(STUBBED) called");
+}
+
 const Interface::FunctionInfo FunctionTable[] = {
     {0x00010000, nullptr,               "CreateDefaultConfig"},
     {0x00040006, nullptr,               "ConnectAsync"},
@@ -60,7 +77,7 @@ const Interface::FunctionInfo FunctionTable[] = {
     {0x00300004, nullptr,               "RegisterDisconnectEvent"},
     {0x003C0042, nullptr,               "GetAPSSIDList"},
     {0x003E0042, IsConnected,           "IsConnected"},
-    {0x00400042, nullptr,               "SetClientVersion"},
+    {0x00400042, SetClientVersion,      "SetClientVersion"},
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
