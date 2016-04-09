@@ -286,6 +286,14 @@ static ResultCode WaitSynchronizationN(s32* out, Handle* handles, s32 handle_cou
     // this happens, the running application will crash.
     ASSERT_MSG(out != nullptr, "invalid output pointer specified!");
 
+    std::ostringstream hndl_names;
+    for (s32 i = 0; i < handle_count; ++i) {
+        auto obj = Kernel::g_handle_table.GetWaitObject(handles[i]);
+        hndl_names << "0x" << std::hex << obj->GetObjectId() << ":" << obj->GetName() << ", ";
+
+    }
+    LOG_DEBUG(Kernel_SVC, "called thrd_id=%d, handles=%s nanoseconds=%lld", Kernel::GetCurrentThread()->GetObjectId(), hndl_names.str().c_str(), nano_seconds);
+
     // Check if 'handle_count' is invalid
     if (handle_count < 0)
         return ResultCode(ErrorDescription::OutOfRange, ErrorModule::OS, ErrorSummary::InvalidArgument, ErrorLevel::Usage);
@@ -737,13 +745,17 @@ static ResultCode ClearTimer(Handle handle) {
 static ResultCode SetTimer(Handle handle, s64 initial, s64 interval) {
     using Kernel::Timer;
 
-    LOG_TRACE(Kernel_SVC, "called timer=0x%08X", handle);
+    LOG_DEBUG(Kernel_SVC, "called timer=0x%08X, lr=0x%08X", handle, Core::g_app_core->GetReg(14));
 
     SharedPtr<Timer> timer = Kernel::g_handle_table.Get<Timer>(handle);
     if (timer == nullptr)
         return ERR_INVALID_HANDLE;
 
     timer->Set(initial, interval);
+
+    if(initial==0 && interval==0) {
+        timer->signaled = true;
+    }
 
     return RESULT_SUCCESS;
 }
