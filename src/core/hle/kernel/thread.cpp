@@ -329,6 +329,7 @@ void Thread::ResumeFromWait() {
         case THREADSTATUS_WAIT_SYNCH:
         case THREADSTATUS_WAIT_ARB:
         case THREADSTATUS_WAIT_SLEEP:
+            wait_address = 0;
             break;
 
         case THREADSTATUS_READY:
