@@ -22,7 +22,7 @@ namespace Core {
 std::unique_ptr<ARM_Interface> g_app_core; ///< ARM11 application core
 std::unique_ptr<ARM_Interface> g_sys_core; ///< ARM11 system (OS) core
 
-/// Run the core CPU loop
+                                           /// Run the core CPU loop
 void RunLoop(int tight_loop) {
     if (GDBStub::g_server_enabled) {
         GDBStub::HandlePacket();
@@ -33,12 +33,13 @@ void RunLoop(int tight_loop) {
             if (GDBStub::GetCpuStepFlag()) {
                 GDBStub::SetCpuStepFlag(false);
                 tight_loop = 1;
-            } else {
+            }
+            else {
                 return;
             }
         }
     }
-
+    static int n = 0;
     // If we don't have a currently active thread then don't execute instructions,
     // instead advance to the next event and try to yield to the next thread
     if (Kernel::GetCurrentThread() == nullptr) {
@@ -46,12 +47,18 @@ void RunLoop(int tight_loop) {
         CoreTiming::Idle();
         CoreTiming::Advance();
         HLE::Reschedule(__func__);
-    } else {
+    }
+    else {
         g_app_core->Run(tight_loop);
+        n = ++n % 6000;
+        if (!n) {
+            HLE::Reschedule(__func__);
+        }
     }
 
     HW::Update();
     if (HLE::g_reschedule) {
+        n = 0;
         Kernel::Reschedule();
     }
 }
