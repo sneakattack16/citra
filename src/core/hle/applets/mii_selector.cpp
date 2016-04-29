@@ -54,6 +54,22 @@ ResultCode MiiSelector::StartImpl(const Service::APT::AppletStartupParameter& pa
 
     // TODO(Subv): Set the expected fields in the response buffer before resending it to the application.
     // TODO(Subv): Reverse the parameter format for the Mii Selector
+    MiiResult* result = reinterpret_cast<MiiResult*>(parameter.data);
+
+    std::u16string s = Common::UTF8ToUTF16("Test name");
+    s.c_str();
+
+    result->result_code = RESULT_SUCCESS.raw;
+
+    result->name_0c[0] = 'A';
+    result->name_0c[1] = 0;
+    result->name_0c[0] = 'B';
+    result->name_0c[1] = 0;
+
+    result->unk_6c[0] = 'C';
+    result->unk_6c[1] = 0;
+    result->unk_6c[0] = 'D';
+    result->unk_6c[1] = 0;
 
     // Let the application know that we're closing
     Service::APT::MessageParameter message;

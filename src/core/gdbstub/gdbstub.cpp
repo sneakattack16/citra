@@ -35,6 +35,7 @@
 #include "core/memory.h"
 #include "core/arm/arm_interface.h"
 #include "core/gdbstub/gdbstub.h"
+#include "core/hle/kernel/thread.h"
 
 const int GDB_BUFFER_SIZE = 10000;
 
@@ -58,36 +59,35 @@ const u32 MSG_WAITALL = 8;
 const u32 R0_REGISTER = 0;
 const u32 R15_REGISTER = 15;
 const u32 CPSR_REGISTER = 25;
+//const u32 CPSR_REGISTER = 16;
 const u32 FPSCR_REGISTER = 58;
 
 // For sample XML files see the GDB source /gdb/features
 // GDB also wants the l character at the start
 // This XML defines what the registers are for this specific ARM device
+
 static const char* target_xml =
 R"(l<?xml version="1.0"?>
 <!DOCTYPE target SYSTEM "gdb-target.dtd">
 <target version="1.0">
+  <architecture>arm</architecture>
   <feature name="org.gnu.gdb.arm.core">
-    <reg name="r0" bitsize="32"/>
-    <reg name="r1" bitsize="32"/>
-    <reg name="r2" bitsize="32"/>
-    <reg name="r3" bitsize="32"/>
-    <reg name="r4" bitsize="32"/>
-    <reg name="r5" bitsize="32"/>
-    <reg name="r6" bitsize="32"/>
-    <reg name="r7" bitsize="32"/>
-    <reg name="r8" bitsize="32"/>
-    <reg name="r9" bitsize="32"/>
-    <reg name="r10" bitsize="32"/>
-    <reg name="r11" bitsize="32"/>
-    <reg name="r12" bitsize="32"/>
+    <reg name="r0" bitsize="32" type="uint32"/>
+    <reg name="r1" bitsize="32" type="uint32"/>
+    <reg name="r2" bitsize="32" type="uint32"/>
+    <reg name="r3" bitsize="32" type="uint32"/>
+    <reg name="r4" bitsize="32" type="uint32"/>
+    <reg name="r5" bitsize="32" type="uint32"/>
+    <reg name="r6" bitsize="32" type="uint32"/>
+    <reg name="r7" bitsize="32" type="uint32"/>
+    <reg name="r8" bitsize="32" type="uint32"/>
+    <reg name="r9" bitsize="32" type="uint32"/>
+    <reg name="r10" bitsize="32" type="uint32"/>
+    <reg name="r11" bitsize="32" type="uint32"/>
+    <reg name="r12" bitsize="32" type="uint32"/>
     <reg name="sp" bitsize="32" type="data_ptr"/>
     <reg name="lr" bitsize="32"/>
     <reg name="pc" bitsize="32" type="code_ptr"/>
-
-    <!-- The CPSR is register 25, rather than register 16, because
-         the FPA registers historically were placed between the PC
-         and the CPSR in the "g" packet.  -->
 
     <reg name="cpsr" bitsize="32" regnum="25"/>
   </feature>
@@ -108,10 +108,60 @@ R"(l<?xml version="1.0"?>
     <reg name="d13" bitsize="64" type="float"/>
     <reg name="d14" bitsize="64" type="float"/>
     <reg name="d15" bitsize="64" type="float"/>
+
     <reg name="fpscr" bitsize="32" type="int" group="float"/>
   </feature>
 </target>
 )";
+
+
+/*
+static const char* target_xml =
+R"(l<?xml version="1.0"?>
+<!DOCTYPE target SYSTEM "gdb-target.dtd">
+<target version="1.0">
+  <architecture>arm</architecture>
+  <feature name="org.gnu.gdb.arm.core">
+    <reg name="r0" bitsize="32"/>
+    <reg name="r1" bitsize="32"/>
+    <reg name="r2" bitsize="32"/>
+    <reg name="r3" bitsize="32"/>
+    <reg name="r4" bitsize="32"/>
+    <reg name="r5" bitsize="32"/>
+    <reg name="r6" bitsize="32"/>
+    <reg name="r7" bitsize="32"/>
+    <reg name="r8" bitsize="32"/>
+    <reg name="r9" bitsize="32"/>
+    <reg name="r10" bitsize="32"/>
+    <reg name="r11" bitsize="32"/>
+    <reg name="r12" bitsize="32"/>
+    <reg name="sp" bitsize="32" type="data_ptr"/>
+    <reg name="lr" bitsize="32"/>
+    <reg name="pc" bitsize="32" type="code_ptr"/>
+    <reg name="cpsr" bitsize="32" regnum="25"/>
+  </feature>
+  <feature name="org.gnu.gdb.arm.vfp">
+    <reg name="d0" bitsize="64" type="ieee_double"/>
+    <reg name="d1" bitsize="64" type="ieee_double"/>
+    <reg name="d2" bitsize="64" type="ieee_double"/>
+    <reg name="d3" bitsize="64" type="ieee_double"/>
+    <reg name="d4" bitsize="64" type="ieee_double"/>
+    <reg name="d5" bitsize="64" type="ieee_double"/>
+    <reg name="d6" bitsize="64" type="ieee_double"/>
+    <reg name="d7" bitsize="64" type="ieee_double"/>
+    <reg name="d8" bitsize="64" type="ieee_double"/>
+    <reg name="d9" bitsize="64" type="ieee_double"/>
+    <reg name="d10" bitsize="64" type="ieee_double"/>
+    <reg name="d11" bitsize="64" type="ieee_double"/>
+    <reg name="d12" bitsize="64" type="ieee_double"/>
+    <reg name="d13" bitsize="64" type="ieee_double"/>
+    <reg name="d14" bitsize="64" type="ieee_double"/>
+    <reg name="d15" bitsize="64" type="ieee_double"/>
+    <reg name="fpscr" bitsize="32" type="int" group="float"/>
+  </feature>
+</target>
+)";
+*/
 
 namespace GDBStub {
 
@@ -160,7 +210,7 @@ static u8 HexCharToValue(u8 hex) {
         return hex - 'A' + 0xA;
     }
 
-    LOG_ERROR(Debug_GDBStub, "Invalid nibble: %c (%02x)\n", hex, hex);
+    LOG_ERROR(Debug_GDBStub, "Invalid nibble: %c (%02x)", hex, hex);
     return 0;
 }
 
@@ -297,7 +347,7 @@ static void RemoveBreakpoint(BreakpointType type, PAddr addr) {
 
     auto bp = p.find(addr);
     if (bp != p.end()) {
-        LOG_DEBUG(Debug_GDBStub, "gdb: removed a breakpoint: %08x bytes at %08x of type %d\n", bp->second.len, bp->second.addr, type);
+        LOG_DEBUG(Debug_GDBStub, "gdb: removed a breakpoint: %08x bytes at %08x of type %d", bp->second.len, bp->second.addr, type);
         p.erase(addr);
     }
 }
@@ -325,9 +375,12 @@ bool CheckBreakpoint(PAddr addr, BreakpointType type) {
 
     std::map<u32, Breakpoint>& p = GetBreakpointList(type);
 
-    auto bp = p.find(addr);
-    if (bp != p.end()) {
-        u32 len = bp->second.len;
+    //auto bp = p.find(addr);
+
+    for(auto bp: p) {
+
+    //if (bp != p.end()) {
+        u32 len = bp.second.len;
 
         // IDA Pro defaults to 4-byte breakpoints for all non-hardware breakpoints
         // no matter if it's a 4-byte or 2-byte instruction. When you execute a
@@ -341,8 +394,8 @@ bool CheckBreakpoint(PAddr addr, BreakpointType type) {
             len = 1;
         }
 
-        if (bp->second.active && (addr >= bp->second.addr && addr < bp->second.addr + len)) {
-            LOG_DEBUG(Debug_GDBStub, "Found breakpoint type %d @ %08x, range: %08x - %08x (%d bytes)\n", type, addr, bp->second.addr, bp->second.addr + len, len);
+        if (bp.second.active && (addr >= bp.second.addr && addr < bp.second.addr + len)) {
+            LOG_INFO(Debug_GDBStub, "Found breakpoint type %d @ %08x, range: %08x - %08x (%d bytes)", type, addr, bp.second.addr, bp.second.addr + len, len);
             return true;
         }
     }
@@ -382,11 +435,13 @@ static void SendReply(const char* reply) {
 
     memcpy(command_buffer + 1, reply, command_length);
 
-    u8 checksum = CalculateChecksum(command_buffer, command_length + 1);
+    u8 checksum = CalculateChecksum(command_buffer + 1, command_length);
     command_buffer[0] = GDB_STUB_START;
     command_buffer[command_length + 1] = GDB_STUB_END;
     command_buffer[command_length + 2] = NibbleToHex(checksum >> 4);
     command_buffer[command_length + 3] = NibbleToHex(checksum);
+
+    LOG_DEBUG(Debug_GDBStub, "reply: %s", command_buffer);
 
     u8* ptr = command_buffer;
     u32 left = command_length + 4;
@@ -404,17 +459,28 @@ static void SendReply(const char* reply) {
 
 /// Handle query command from gdb client.
 static void HandleQuery() {
-    LOG_DEBUG(Debug_GDBStub, "gdb: query '%s'\n", command_buffer + 1);
+    LOG_DEBUG(Debug_GDBStub, "gdb: query '%s'", command_buffer + 1);
 
     const char* query = reinterpret_cast<const char*>(command_buffer + 1);
+    char reply[100];
 
     if (strcmp(query, "TStatus") == 0 ) {
         SendReply("T0");
-    } else if (strncmp(query, "Supported:", strlen("Supported:")) == 0) {
+    } else if (strncmp(query, "Supported", strlen("Supported")) == 0) {
         // PacketSize needs to be large enough for target xml
         SendReply("PacketSize=800;qXfer:features:read+");
     } else if (strncmp(query, "Xfer:features:read:target.xml:", strlen("Xfer:features:read:target.xml:")) == 0) {
         SendReply(target_xml);
+    } else if (strncmp(query, "fThreadInfo", strlen("fThreadInfo")) == 0) {
+        // return thread_id list. TODO: get all list
+        Kernel::Thread* thread = Kernel::GetCurrentThread();
+        snprintf(reply, 100, "m%08xl", htonl(thread->GetThreadId()));
+        SendReply(reply);
+    } else if (strncmp(query, "C", strlen("C")) == 0) {
+        // return thread_id
+        Kernel::Thread* thread = Kernel::GetCurrentThread();
+        snprintf(reply, 100, "QC%08x", htonl(thread->GetThreadId()));
+        SendReply(reply);
     } else {
         SendReply("");
     }
@@ -459,18 +525,18 @@ static void ReadCommand() {
         //ignore ack
         return;
     } else if (c == 0x03) {
-        LOG_INFO(Debug_GDBStub, "gdb: found break command\n");
+        LOG_INFO(Debug_GDBStub, "gdb: found break command");
         halt_loop = true;
         SendSignal(SIGTRAP);
         return;
     } else if (c != GDB_STUB_START) {
-        LOG_DEBUG(Debug_GDBStub, "gdb: read invalid byte %02x\n", c);
+        LOG_DEBUG(Debug_GDBStub, "gdb: read invalid byte %02x", c);
         return;
     }
 
     while ((c = ReadByte()) != GDB_STUB_END) {
         if (command_length >= sizeof(command_buffer)) {
-            LOG_ERROR(Debug_GDBStub, "gdb: command_buffer overflow\n");
+            LOG_ERROR(Debug_GDBStub, "gdb: command_buffer overflow");
             SendPacket(GDB_STUB_NACK);
             return;
         }
@@ -483,7 +549,7 @@ static void ReadCommand() {
     u8 checksum_calculated = CalculateChecksum(command_buffer, command_length);
 
     if (checksum_received != checksum_calculated) {
-        LOG_ERROR(Debug_GDBStub, "gdb: invalid checksum: calculated %02x and read %02x for $%s# (length: %d)\n",
+        LOG_ERROR(Debug_GDBStub, "gdb: invalid checksum: calculated %02x and read %02x for $%s# (length: %d)",
             checksum_calculated, checksum_received, command_buffer, command_length);
 
         command_length = 0;
@@ -638,7 +704,7 @@ static void ReadMemory() {
     start_offset = addr_pos+1;
     u32 len = HexToInt(start_offset, (command_buffer + command_length) - start_offset);
 
-    LOG_DEBUG(Debug_GDBStub, "gdb: addr: %08x len: %08x\n", addr, len);
+    LOG_DEBUG(Debug_GDBStub, "gdb: addr: %08x len: %08x", addr, len);
 
     if (len * 2 > sizeof(reply)) {
         SendReply("E01");
@@ -722,7 +788,7 @@ bool CommitBreakpoint(BreakpointType type, PAddr addr, u32 len) {
     breakpoint.len = len;
     p.insert({ addr, breakpoint });
 
-    LOG_DEBUG(Debug_GDBStub, "gdb: added %d breakpoint: %08x bytes at %08x\n", type, breakpoint.len, breakpoint.addr);
+    LOG_DEBUG(Debug_GDBStub, "gdb: added %d breakpoint: %08x bytes at %08x", type, breakpoint.len, breakpoint.addr);
 
     return true;
 }
@@ -834,19 +900,26 @@ void HandlePacket() {
     LOG_DEBUG(Debug_GDBStub, "Packet: %s", command_buffer);
 
     switch (command_buffer[0]) {
+    case '!':
+        SendReply("OK");
+        break;
+    case '?':
+        SendSignal(latest_signal);
+        break;
+    case 'C':
+    case 'c':
+        Continue();
+        break;
     case 'q':
         HandleQuery();
         break;
     case 'H':
         HandleSetThread();
         break;
-    case '?':
-        SendSignal(latest_signal);
-        break;
     case 'k':
         Shutdown();
         LOG_INFO(Debug_GDBStub, "killed by gdb");
-        return;
+        break;
     case 'g':
         ReadRegisters();
         break;
@@ -867,17 +940,14 @@ void HandlePacket() {
         break;
     case 's':
         Step();
-        return;
-    case 'C':
-    case 'c':
-        Continue();
-        return;
+        break;
     case 'z':
         RemoveBreakpoint();
         break;
     case 'Z':
         AddBreakpoint();
         break;
+
     default:
         SendReply("");
         break;
@@ -958,7 +1028,7 @@ void Init(u16 port) {
     }
 
     // Wait for gdb to connect
-    LOG_INFO(Debug_GDBStub, "Waiting for gdb to connect...\n");
+    LOG_INFO(Debug_GDBStub, "Waiting for gdb to connect...");
     sockaddr_in saddr_client;
     sockaddr* client_addr = reinterpret_cast<sockaddr*>(&saddr_client);
     socklen_t client_addrlen = sizeof(saddr_client);
