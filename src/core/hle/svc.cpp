@@ -471,7 +471,7 @@ static ResultCode CreateThread(Handle* out_handle, s32 priority, u32 entry_point
         TSymbol symbol = Symbols::GetSymbol(entry_point);
         name = symbol.name;
     } else {
-        name = Common::StringFromFormat("unknown-%08x", entry_point);
+        name = Common::StringFromFormat("thread-%08x", Memory::Read32(arg+8));
     }
 
     // TODO(bunnei): Implement resource limits to return an error code instead of the below assert.
@@ -539,6 +539,7 @@ static ResultCode CreateMutex(Handle* out_handle, u32 initial_locked) {
     using Kernel::Mutex;
 
     SharedPtr<Mutex> mutex = Mutex::Create(initial_locked != 0);
+    mutex->name = Common::StringFromFormat("mutex-%08x", Core::g_app_core->GetReg(14));
     CASCADE_RESULT(*out_handle, Kernel::g_handle_table.Create(std::move(mutex)));
 
     LOG_TRACE(Kernel_SVC, "called initial_locked=%s : created handle=0x%08X",
@@ -607,6 +608,7 @@ static ResultCode CreateSemaphore(Handle* out_handle, s32 initial_count, s32 max
     using Kernel::Semaphore;
 
     CASCADE_RESULT(SharedPtr<Semaphore> semaphore, Semaphore::Create(initial_count, max_count));
+    semaphore->name = Common::StringFromFormat("semaphore-%08x", Core::g_app_core->GetReg(14));
     CASCADE_RESULT(*out_handle, Kernel::g_handle_table.Create(std::move(semaphore)));
 
     LOG_TRACE(Kernel_SVC, "called initial_count=%d, max_count=%d, created handle=0x%08X",
@@ -661,6 +663,7 @@ static ResultCode CreateEvent(Handle* out_handle, u32 reset_type) {
     using Kernel::Event;
 
     SharedPtr<Event> evt = Event::Create(static_cast<Kernel::ResetType>(reset_type));
+    evt->name = Common::StringFromFormat("event-%08x", Core::g_app_core->GetReg(14));
     CASCADE_RESULT(*out_handle, Kernel::g_handle_table.Create(std::move(evt)));
 
     LOG_TRACE(Kernel_SVC, "called reset_type=0x%08X : created handle=0x%08X",
@@ -707,6 +710,7 @@ static ResultCode CreateTimer(Handle* out_handle, u32 reset_type) {
     using Kernel::Timer;
 
     SharedPtr<Timer> timer = Timer::Create(static_cast<Kernel::ResetType>(reset_type));
+    timer->name = Common::StringFromFormat("timer-%08x", Core::g_app_core->GetReg(14));
     CASCADE_RESULT(*out_handle, Kernel::g_handle_table.Create(std::move(timer)));
 
     LOG_TRACE(Kernel_SVC, "called reset_type=0x%08X : created handle=0x%08X",
