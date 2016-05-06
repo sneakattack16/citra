@@ -450,7 +450,7 @@ static const char* GetType(GLenum type) {
 #undef RET
 }
 
-static void DebugHandler(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
+static void APIENTRY DebugHandler(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
                          const GLchar* message, const void* user_param) {
     Log::Level level;
     switch (severity) {
@@ -488,7 +488,7 @@ bool RendererOpenGL::Init() {
     LOG_INFO(Render_OpenGL, "GL_VENDOR: %s", glGetString(GL_VENDOR));
     LOG_INFO(Render_OpenGL, "GL_RENDERER: %s", glGetString(GL_RENDERER));
     if (!GLAD_GL_VERSION_3_3) {
-        return false;
+        //return false;
     }
 
     InitOpenGLObjects();
