@@ -77,7 +77,7 @@ const Interface::FunctionInfo FunctionTable[] = {
     {0x00420080, nullptr,                         "SleepSystem"},
     {0x00430040, NotifyToWait,                    "NotifyToWait"},
     {0x00440000, GetSharedFont,                   "GetSharedFont"},
-    {0x00450040, nullptr,                         "GetWirelessRebootInfo"},
+    {0x00450040, GetWirelessRebootInfo,           "GetWirelessRebootInfo"},
     {0x00460104, nullptr,                         "Wrap"},
     {0x00470104, nullptr,                         "Unwrap"},
     {0x00480100, nullptr,                         "GetProgramInfo"},

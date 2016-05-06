@@ -50,6 +50,21 @@ void SendParameter(const MessageParameter& parameter) {
     parameter_event->Signal();
 }
 
+void GetWirelessRebootInfo(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    u32 size = cmd_buff[1];
+    u32 buff_addr = cmd_buff[0x41];
+
+    for(u32 i=0; i<size; ++i) {
+        Memory::Write8(buff_addr + i, 0);
+    }
+
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+
+    LOG_WARNING(Service_APT, "(STUBBED) called");
+}
+
 void Initialize(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
     u32 app_id = cmd_buff[1];

@@ -76,6 +76,8 @@ enum class StartupArgumentType : u32 {
 /// Send a parameter to the currently-running application, which will read it via ReceiveParameter
 void SendParameter(const MessageParameter& parameter);
 
+void GetWirelessRebootInfo(Service::Interface* self);
+
 /**
  * APT::Initialize service function
  * Service function that initializes the APT process for the running application
