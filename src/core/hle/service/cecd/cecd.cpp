@@ -51,6 +51,19 @@ void Init() {
     change_state_event = Kernel::Event::Create(Kernel::ResetType::OneShot, "CECD_U::change_state_event");
 }
 
+void OpenAndReadFile(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    u32 addr = cmd_buff[1];
+
+    //const u8* fname = Memory::GetPointer(addr);
+
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+    cmd_buff[2] = 0;
+
+    LOG_WARNING(Service_CECD, "(STUBBED) called addr=0x%08X", addr);
+}
+
 void Shutdown() {
     cecinfo_event = nullptr;
     change_state_event = nullptr;

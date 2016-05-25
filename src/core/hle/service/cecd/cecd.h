@@ -48,6 +48,16 @@ void GetCecInfoEventHandle(Service::Interface* self);
  */
 void GetChangeStateEventHandle(Service::Interface* self);
 
+/**
+* OpenAndReadFile service function
+*  Inputs:
+*      0: 0x00100000
+*  Outputs:
+*      1: ResultCode
+*      3: Event Handle
+*/
+void OpenAndReadFile(Service::Interface* self);
+
 /// Initialize CECD service(s)
 void Init();
 
