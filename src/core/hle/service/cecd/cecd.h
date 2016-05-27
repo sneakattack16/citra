@@ -48,15 +48,51 @@ void GetCecInfoEventHandle(Service::Interface* self);
  */
 void GetChangeStateEventHandle(Service::Interface* self);
 
+
 /**
-* OpenAndReadFile service function
+* OpenAndWriteFile service function
 *  Inputs:
-*      0: 0x00100000
+*      0: 0x00110104
 *  Outputs:
 *      1: ResultCode
-*      3: Event Handle
+*/
+void OpenAndWriteFile(Service::Interface* self);
+
+/**
+ * OpenAndReadFile service function
+ *  Inputs:
+ *      0: 0x00120104
+ *  Outputs:
+ *      1: ResultCode
 */
 void OpenAndReadFile(Service::Interface* self);
+
+/**
+ * Open service function
+ *  Inputs:
+ *      0: 0x000100C2
+ *  Outputs:
+ *      1: ResultCode
+ */
+void Open(Service::Interface* self);
+
+/**
+ * SetData service function
+ *  Inputs:
+ *      0: 0x000900C2
+ *  Outputs:
+ *      1: ResultCode
+ */
+void SetData(Service::Interface* self);
+
+/**
+ * ReadData service function
+ *  Inputs:
+ *      0: 0x000A00C4
+ *  Outputs:
+ *      1: ResultCode
+ */
+void ReadData(Service::Interface* self);
 
 /// Initialize CECD service(s)
 void Init();
