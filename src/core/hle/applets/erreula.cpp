@@ -71,5 +71,5 @@ ResultCode ErrEula::StartImpl(const Service::APT::AppletStartupParameter& parame
 void ErrEula::Update() {
 }
 
-}
-}
+} // namespace Applets
+} // namespace HLE

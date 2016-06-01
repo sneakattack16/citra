@@ -12,7 +12,7 @@ namespace Applets {
 
 class ErrEula final : public Applet {
 public:
-    ErrEula(Service::APT::AppletId id): Applet(id), started(false) { }
+    explicit ErrEula(Service::APT::AppletId id): Applet(id) { }
 
     ResultCode ReceiveParameter(const Service::APT::MessageParameter& parameter) override;
     ResultCode StartImpl(const Service::APT::AppletStartupParameter& parameter) override;
@@ -22,10 +22,10 @@ public:
     /// TODO(Subv): Find out what this is actually used for.
     /// It is believed that the application stores the current screen image here.
     Kernel::SharedPtr<Kernel::SharedMemory> framebuffer_memory;
-
+private:
     /// Whether this applet is currently running instead of the host application or not.
-    bool started;
+    bool started = false;
 };
 
-}
-}
+} // namespace Applets
+} // namespace HLE
