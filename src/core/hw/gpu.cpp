@@ -19,6 +19,7 @@
 #include "core/hle/service/gsp_gpu.h"
 #include "core/hle/service/hid/hid.h"
 
+#include "core/hw/camera.h"
 #include "core/hw/hw.h"
 #include "core/hw/gpu.h"
 
@@ -429,6 +430,9 @@ static void VBlankCallback(u64 userdata, int cycles_late) {
     // two different intervals.
     GSP_GPU::SignalInterrupt(GSP_GPU::InterruptId::PDC0);
     GSP_GPU::SignalInterrupt(GSP_GPU::InterruptId::PDC1);
+
+    // Signal to camera module
+    HW::Camera::SignalVblankInterrupt();
 
     // Check for user input updates
     Service::HID::Update();
