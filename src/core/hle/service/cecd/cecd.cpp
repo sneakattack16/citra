@@ -45,7 +45,7 @@ void GetChangeStateEventHandle(Service::Interface* self) {
 }
 
 //nn::Result OpenAndWriteFile(const u8 pWriteBuf[], size_t writeBufLen, u32 cecTitleId, u32 dataType, u32 option);
-void OpenAndWriteFile(Service::Interface* self) {
+void OpenAndWrite(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
     u32 size = cmd_buff[1];
@@ -62,7 +62,7 @@ void OpenAndWriteFile(Service::Interface* self) {
     //Common::Dump(addr, size);
 }
 
-void OpenAndReadFile(Service::Interface* self) {
+void OpenAndRead(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
     u32 size = cmd_buff[1];
@@ -83,7 +83,7 @@ void OpenAndReadFile(Service::Interface* self) {
     cmd_buff[2] = 0; // output size
 }
 
-void Open(Service::Interface* self) {
+void OpenMailbox(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
     u32 cec_title_id = cmd_buff[1];

@@ -50,31 +50,31 @@ void GetChangeStateEventHandle(Service::Interface* self);
 
 
 /**
-* OpenAndWriteFile service function
+* OpenAndWrite service function
 *  Inputs:
 *      0: 0x00110104
 *  Outputs:
 *      1: ResultCode
 */
-void OpenAndWriteFile(Service::Interface* self);
+void OpenAndWrite(Service::Interface* self);
 
 /**
- * OpenAndReadFile service function
+ * OpenAndRead service function
  *  Inputs:
  *      0: 0x00120104
  *  Outputs:
  *      1: ResultCode
 */
-void OpenAndReadFile(Service::Interface* self);
+void OpenAndRead(Service::Interface* self);
 
 /**
- * Open service function
+ * OpenMailbox service function
  *  Inputs:
  *      0: 0x000100C2
  *  Outputs:
  *      1: ResultCode
  */
-void Open(Service::Interface* self);
+void OpenMailbox(Service::Interface* self);
 
 /**
  * SetData service function
