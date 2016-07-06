@@ -14,9 +14,16 @@ struct CameraContext {
     Size size;
     Effect effect;
     Flip flip;
+    s16 width;
+    s16 height;
+    s16 cropX0;
+    s16 cropY0;
+    s16 cropX1;
+    s16 cropY1;
 };
 
 struct CameraConfig {
+    FrameRate frame_rate;
     Context current_context = Context::A;
     CameraContext context_A;
     CameraContext context_B;
@@ -33,6 +40,14 @@ struct PortConfig {
     u16 height;
     u32 transfer_bytes;
     bool trimming;
+    s16 x_start;
+    s16 y_start;
+    s16 x_end;
+    s16 y_end;
+    s16 trimW;
+    s16 trimH;
+    s16 camW;
+    s16 camH;
 
     Kernel::SharedPtr<Kernel::Event> completion_event_cam = Kernel::Event::Create(Kernel::ResetType::OneShot, "CAM_U::completion_event_cam");
     Kernel::SharedPtr<Kernel::Event> interrupt_buffer_error_event = Kernel::Event::Create(Kernel::ResetType::OneShot, "CAM_U::interrupt_buffer_error_event");
@@ -45,17 +60,15 @@ struct PortConfig {
     }
 };
 
-
 static bool driver_initialized = false;
-static u32 transfer_bytes = 5 * 1024;
 static bool activated = false;
 static bool camera_capture = false;
 
 static FrameRate frame_rate = FrameRate::Rate_15;
 
-static Port         current_port = Port::None;
-static std::unique_ptr<PortConfig>     port1;
-static std::unique_ptr<PortConfig>     port2;
+static Port current_port = Port::None;
+static std::unique_ptr<PortConfig> port1;
+static std::unique_ptr<PortConfig> port2;
 
 static CameraSelect current_camera = CameraSelect::None;
 static CameraConfig inner;
@@ -250,6 +263,169 @@ ResultCode SetTrimming(u8 port, bool trimming) {
     }
     return RESULT_SUCCESS;
 }
+
+ResultCode SetTrimmingParams(u8 port, s16 x_start, s16 y_start, s16 x_end, s16 y_end) {
+    if (port & (u8)Port::Cam1) {
+        port1->x_start = x_start;
+        port1->y_start = y_start;
+        port1->x_end = x_end;
+        port1->y_end = y_end;
+    }
+
+    if (port & (u8)Port::Cam2) {
+        port2->x_start = x_start;
+        port2->y_start = y_start;
+        port2->x_end = x_end;
+        port2->y_end = y_end;
+    }
+    return RESULT_SUCCESS;
+}
+
+ResultCode SetTrimmingParamsCenter(u8 port, s16 trimW, s16 trimH, s16 camW, s16 camH) {
+    if (port & (u8)Port::Cam1) {
+        port1->trimW = trimW;
+        port1->trimH = trimH;
+        port1->camW = camW;
+        port1->camH = camH;
+    }
+
+    if (port & (u8)Port::Cam2) {
+        port2->trimW = trimW;
+        port2->trimH = trimH;
+        port2->camW = camW;
+        port2->camH = camH;
+    }
+    return RESULT_SUCCESS;
+}
+
+ResultCode FlipImage(u8 camera_select, u8 flip, u8 context) {
+    if (camera_select & (u8)CameraSelect::In1) {
+        if(context & (u8)Context::A) {
+            inner.context_A.flip = static_cast<Flip>(flip);
+        }
+        if (context & (u8)Context::B) {
+            inner.context_B.flip = static_cast<Flip>(flip);
+        }
+    }
+    if (camera_select & (u8)CameraSelect::Out1) {
+        if (context & (u8)Context::A) {
+            outer1.context_A.flip = static_cast<Flip>(flip);
+        }
+        if (context & (u8)Context::B) {
+            outer1.context_B.flip = static_cast<Flip>(flip);
+        }
+    }
+    if (camera_select & (u8)CameraSelect::Out2) {
+        if (context & (u8)Context::A) {
+            outer2.context_A.flip = static_cast<Flip>(flip);
+        }
+        if (context & (u8)Context::B) {
+            outer2.context_B.flip = static_cast<Flip>(flip);
+        }
+    }
+    return RESULT_SUCCESS;
+}
+
+ResultCode SetSize(u8 camera_select, u8 size, u8 context) {
+    if (camera_select & (u8)CameraSelect::In1) {
+        if (context & (u8)Context::A) {
+            inner.context_A.size = static_cast<Size>(size);
+        }
+        if (context & (u8)Context::B) {
+            inner.context_B.size = static_cast<Size>(size);
+        }
+    }
+    if (camera_select & (u8)CameraSelect::Out1) {
+        if (context & (u8)Context::A) {
+            outer1.context_A.size = static_cast<Size>(size);
+        }
+        if (context & (u8)Context::B) {
+            outer1.context_B.size = static_cast<Size>(size);
+        }
+    }
+    if (camera_select & (u8)CameraSelect::Out2) {
+        if (context & (u8)Context::A) {
+            outer2.context_A.size = static_cast<Size>(size);
+        }
+        if (context & (u8)Context::B) {
+            outer2.context_B.size = static_cast<Size>(size);
+        }
+    }
+    return RESULT_SUCCESS;
+}
+
+ResultCode SetDetailSize(u8 camera_select, s16 width, s16 height, s16 cropX0, s16 cropY0, s16 cropX1, s16 cropY1, u8 context) {
+    if (camera_select & (u8)CameraSelect::In1) {
+        if (context & (u8)Context::A) {
+            inner.context_A.width = width;
+            inner.context_A.height = height;
+            inner.context_A.cropX0 = cropX0;
+            inner.context_A.cropY0 = cropY0;
+            inner.context_A.cropX1 = cropX1;
+            inner.context_A.cropY1 = cropY1;
+        }
+        if (context & (u8)Context::B) {
+            inner.context_B.width = width;
+            inner.context_B.height = height;
+            inner.context_B.cropX0 = cropX0;
+            inner.context_B.cropY0 = cropY0;
+            inner.context_B.cropX1 = cropX1;
+            inner.context_B.cropY1 = cropY1;
+        }
+    }
+    if (camera_select & (u8)CameraSelect::Out1) {
+        if (context & (u8)Context::A) {
+            outer1.context_A.width = width;
+            outer1.context_A.height = height;
+            outer1.context_A.cropX0 = cropX0;
+            outer1.context_A.cropY0 = cropY0;
+            outer1.context_A.cropX1 = cropX1;
+            outer1.context_A.cropY1 = cropY1;
+        }
+        if (context & (u8)Context::B) {
+            outer1.context_B.width = width;
+            outer1.context_B.height = height;
+            outer1.context_B.cropX0 = cropX0;
+            outer1.context_B.cropY0 = cropY0;
+            outer1.context_B.cropX1 = cropX1;
+            outer1.context_B.cropY1 = cropY1;
+        }
+    }
+    if (camera_select & (u8)CameraSelect::Out2) {
+        if (context & (u8)Context::A) {
+            outer2.context_A.width = width;
+            outer2.context_A.height = height;
+            outer2.context_A.cropX0 = cropX0;
+            outer2.context_A.cropY0 = cropY0;
+            outer2.context_A.cropX1 = cropX1;
+            outer2.context_A.cropY1 = cropY1;
+        }
+        if (context & (u8)Context::B) {
+            outer2.context_B.width = width;
+            outer2.context_B.height = height;
+            outer2.context_B.cropX0 = cropX0;
+            outer2.context_B.cropY0 = cropY0;
+            outer2.context_B.cropX1 = cropX1;
+            outer2.context_B.cropY1 = cropY1;
+        }
+    }
+    return RESULT_SUCCESS;
+}
+
+ResultCode SetFrameRate(u8 camera_select, u8 frame_rt) {
+    frame_rate = static_cast<FrameRate>(frame_rt);
+    if (camera_select & (u8)CameraSelect::In1) {
+        inner.frame_rate = static_cast<FrameRate>(frame_rt);
+    }
+    if (camera_select & (u8)CameraSelect::Out1) {
+        outer1.frame_rate = static_cast<FrameRate>(frame_rt);
+    }
+    if (camera_select & (u8)CameraSelect::Out2) {
+        outer2.frame_rate = static_cast<FrameRate>(frame_rt);
+    }
+    return RESULT_SUCCESS;
+}
+
 
 ResultCode Activate(u8 camera_select) {
     current_camera = static_cast<CameraSelect>(camera_select);

@@ -121,7 +121,7 @@ void SetTransferLines(Service::Interface* self) {
     cmd_buff[1] = HW::Camera::SetTransferLines(port, transfer_lines, width, height).raw;
 
     LOG_WARNING(Service_CAM, "(STUBBED) called, port=%u, lines=%u, width=%u, height=%u",
-            port, transfer_lines, width, height);
+                port, transfer_lines, width, height);
 }
 
 void GetMaxLines(Service::Interface* self) {
@@ -132,7 +132,7 @@ void GetMaxLines(Service::Interface* self) {
 
     cmd_buff[0] = IPC::MakeHeader(0xA, 2, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw;
-    cmd_buff[2] = (5*1024) / (2 * width);
+    cmd_buff[2] = HW::Camera::TRANSFER_BUFFER_SIZE / (2 * width);
 
     LOG_WARNING(Service_CAM, "(STUBBED) called, width=%u, height=%u, lines = %u",
                 width, height, cmd_buff[2]);
@@ -186,7 +186,7 @@ void SetTrimmingParams(Service::Interface* self) {
     s16 x_end = cmd_buff[4] & 0xFFFF;
     s16 y_end = cmd_buff[5] & 0xFFFF;
 
-    cmd_buff[1] = RESULT_SUCCESS.raw;
+    cmd_buff[1] = HW::Camera::SetTrimmingParams(port, x_start, y_start, x_end, y_end).raw;
 
     LOG_WARNING(Service_CAM, "(STUBBED) called, port=%d, x_start=%d, y_start=%d, x_end=%d, y_end=%d",
         port, x_start, y_start, x_end, y_end);
@@ -202,10 +202,10 @@ void SetTrimmingParamsCenter(Service::Interface* self) {
     s16 camH  = cmd_buff[5] & 0xFFFF;
 
     cmd_buff[0] = IPC::MakeHeader(0x12, 1, 0);
-    cmd_buff[1] = RESULT_SUCCESS.raw;
+    cmd_buff[1] = HW::Camera::SetTrimmingParamsCenter(port, trimW, trimH, camW, camH).raw;
 
     LOG_WARNING(Service_CAM, "(STUBBED) called, port=%d, trimW=%d, trimH=%d, camW=%d, camH=%d",
-            port, trimW, trimH, camW, camH);
+                port, trimW, trimH, camW, camH);
 }
 
 void Activate(Service::Interface* self) {
@@ -227,10 +227,10 @@ void FlipImage(Service::Interface* self) {
     u8 context    = cmd_buff[3] & 0xFF;
 
     cmd_buff[0] = IPC::MakeHeader(0x1D, 1, 0);
-    cmd_buff[1] = RESULT_SUCCESS.raw;
+    cmd_buff[1] = HW::Camera::FlipImage(cam_select, flip, context).raw;
 
-    LOG_WARNING(Service_CAM, "(STUBBED) called, cam_select=%d, flip=%d, context=%d",
-            cam_select, flip, context);
+    LOG_WARNING(Service_CAM, "(STUBBED) called, cam_select=%u, flip=%u, context=%u",
+                cam_select, flip, context);
 }
 
 void SetDetailSize(Service::Interface* self) {
@@ -245,10 +245,10 @@ void SetDetailSize(Service::Interface* self) {
     s16 cropY1 = cmd_buff[7] & 0xFFFF;
     u8 context = cmd_buff[8] & 0xFF;
 
-    cmd_buff[1] = RESULT_SUCCESS.raw;
+    cmd_buff[1] = HW::Camera::SetDetailSize(cam_select, width, height, cropX0, cropY0, cropX1, cropY1, context).raw;
 
     LOG_WARNING(Service_CAM, "(STUBBED) called, cam_select=%u, width=%d, height=%d, cropX0=%d, cropY0=%d, cropX1=%d, cropY1=%d, context=%u",
-        cam_select, width, height, cropX0, cropY0, cropX1, cropY1, context);
+                cam_select, width, height, cropX0, cropY0, cropX1, cropY1, context);
 }
 
 void SetSize(Service::Interface* self) {
@@ -259,10 +259,10 @@ void SetSize(Service::Interface* self) {
     u8 context    = cmd_buff[3] & 0xFF;
 
     cmd_buff[0] = IPC::MakeHeader(0x1F, 1, 0);
-    cmd_buff[1] = RESULT_SUCCESS.raw;
+    cmd_buff[1] = HW::Camera::SetSize(cam_select, size, context).raw;
 
     LOG_WARNING(Service_CAM, "(STUBBED) called, cam_select=%u, size=%u, context=%u",
-            cam_select, size, context);
+                cam_select, size, context);
 }
 
 void SetFrameRate(Service::Interface* self) {
@@ -272,10 +272,10 @@ void SetFrameRate(Service::Interface* self) {
     u8 frame_rate = cmd_buff[2] & 0xFF;
 
     cmd_buff[0] = IPC::MakeHeader(0x20, 1, 0);
-    cmd_buff[1] = RESULT_SUCCESS.raw;
+    cmd_buff[1] = HW::Camera::SetFrameRate(cam_select, frame_rate).raw;
 
     LOG_WARNING(Service_CAM, "(STUBBED) called, cam_select=%d, frame_rate=%d",
-            cam_select, frame_rate);
+                cam_select, frame_rate);
 }
 
 void GetStereoCameraCalibrationData(Service::Interface* self) {
@@ -358,5 +358,4 @@ void Shutdown() {
 }
 
 } // namespace CAM
-
 } // namespace Service

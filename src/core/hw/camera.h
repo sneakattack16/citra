@@ -145,6 +145,8 @@ enum class OutputFormat : u8 {
     RGB565 = 1
 };
 
+const u32 TRANSFER_BUFFER_SIZE = 5 * 1024;
+
 /// Stereo camera calibration data.
 struct StereoCameraCalibrationData {
     u8 isValidRotationXY;      ///< Bool indicating whether the X and Y rotation data is valid.
@@ -203,6 +205,12 @@ ResultCode SetTransferLines(u8 port, u16 transfer_lines, u16 width, u16 height);
 ResultCode SetTransferBytes(u8 port, u32 transfer_bytes, u16 width, u16 height);
 ResultCode GetTransferBytes(u8 port, u32& transfer_bytes);
 ResultCode SetTrimming(u8 port, bool trimming);
+ResultCode SetTrimmingParams(u8 port, s16 x_start, s16 y_start, s16 x_end, s16 y_end);
+ResultCode SetTrimmingParamsCenter(u8 port, s16 trimW, s16 trimH, s16 camW, s16 camH);
+ResultCode FlipImage(u8 camera_select, u8 flip, u8 context);
+ResultCode SetSize(u8 camera_select, u8 size, u8 context);
+ResultCode SetDetailSize(u8 camera_select, s16 width, s16 height, s16 cropX0, s16 cropY0, s16 cropX1, s16 cropY1, u8 context);
+ResultCode SetFrameRate(u8 camera_select, u8 frame_rt);
 ResultCode Activate(u8 camera_select);
 
 ResultCode DriverInitialize();
