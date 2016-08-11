@@ -57,6 +57,29 @@ static ResultCode CROFormatError(u32 description) {
     return ResultCode(static_cast<ErrorDescription>(description), ErrorModule::RO, ErrorSummary::WrongArgument, ErrorLevel::Permanent);
 }
 
+struct CRRHeader {
+    u32 signature;                 ///< CRR0
+    INSERT_PADDING_WORDS(1);
+    u32 next_crr;
+    u32 prev_crr;
+    s32 debug_info_offset;
+    s32 debug_info_size;
+    INSERT_PADDING_WORDS(2);
+    u32 unique_id_mask;
+    u32 unique_id_pattern;
+    INSERT_PADDING_WORDS(6);
+    u8  sign_public_key[256];
+    u8  sign_public_key_sign[256];
+    u8  sign[256];
+    u32 unique_id;
+    u32 size;
+    INSERT_PADDING_WORDS(2);
+    u32 hash_table_offset;
+    u32 num_hashes;
+    u32 module_id_offset;
+    u32 module_id_size;
+};
+
 /// Represents a loaded module (CRO) with interfaces manipulating it.
 class CROHelper final {
     const VAddr address; ///< the virtual address of this module
@@ -68,25 +91,25 @@ class CROHelper final {
     enum HeaderField {
         Magic = 0,
         NameOffset,
-        NextCRO,
-        PreviousCRO,
+        NextCRO,                // LinkListNode
+        PreviousCRO,            //     node
         FileSize,
         BssSize,
-        FixedSize,
-        UnknownZero,
-        UnkSegmentTag,
-        OnLoadSegmentTag,
-        OnExitSegmentTag,
-        OnUnresolvedSegmentTag,
+        FixedSize,              // reserved0
+        UnknownZero,            // reserved1
+        UnkSegmentTag,          // control
+        OnLoadSegmentTag,       // prolog
+        OnExitSegmentTag,       // epilog
+        OnUnresolvedSegmentTag, // unresolded
 
         CodeOffset,
         CodeSize,
-        DataOffset,
+        DataOffset,             // heapBinary
         DataSize,
-        ModuleNameOffset,
+        ModuleNameOffset,       // baseStringTable
         ModuleNameSize,
-        SegmentTableOffset,
-        SegmentNum,
+        SegmentTableOffset,     // sectionInfo
+        SegmentNum,             // numSections
 
         ExportNamedSymbolTableOffset,
         ExportNamedSymbolNum,
@@ -2238,6 +2261,9 @@ static void LoadCRR(Service::Interface* self) {
         cmd_buff[1] = ERROR_INVALID_DESCRIPTOR.raw;
         return;
     }
+
+    CRRHeader header;
+    Memory::ReadBlock(crr_buffer_ptr, &header, sizeof(CRRHeader));
 
     cmd_buff[0] = IPC::MakeHeader(2, 1, 0);
 
