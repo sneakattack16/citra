@@ -161,7 +161,7 @@ void PipeWrite(DspPipe pipe_number, const std::vector<u8>& buffer) {
     }
     default:
         LOG_CRITICAL(Audio_DSP, "pipe_number = %zu unimplemented", static_cast<size_t>(pipe_number));
-        UNIMPLEMENTED();
+        //UNIMPLEMENTED();
         return;
     }
 }

@@ -7,11 +7,16 @@
 namespace Service {
 namespace BOSS {
 
-// Empty arrays are illegal -- commented out until an entry is added.
-// const Interface::FunctionInfo FunctionTable[] = { };
+
+const Interface::FunctionInfo FunctionTable[] = {
+    {0x041500C0, nullptr,                    "DeleteNsDataPrivileged"},
+    {0x04170182, nullptr,                    "ReadNsDataPrivileged"},
+    {0x041A0100, nullptr,                    "SetNsDataNewFlagPrivileged"},
+    {0x041B00C0, nullptr,                    "GetNsDataNewFlagPrivileged"},
+};
 
 BOSS_P_Interface::BOSS_P_Interface() {
-    //Register(FunctionTable);
+    Register(FunctionTable);
 }
 
 } // namespace BOSS
